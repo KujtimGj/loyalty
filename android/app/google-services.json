@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "344560725397",
+    "project_id": "loyalty-8dd5b",
+    "storage_bucket": "loyalty-8dd5b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:344560725397:android:10b18cce8b4a2a7b001a9c",
+        "android_client_info": {
+          "package_name": "com.nounn.loyalty"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDOu7AbFoSKFQQfv4s7aBx9AWD1WX5gMWM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
