@@ -30,6 +30,7 @@ class LoyaltyProgram {
   final String rewardDescription;
   final String rewardType;
   final List<LoyaltyProgramImage> images;
+  final double price;
   final bool isActive;
   final DateTime createdAt;
   final String? businessName; // Populated from business_id
@@ -43,6 +44,7 @@ class LoyaltyProgram {
     required this.rewardDescription,
     required this.rewardType,
     required this.images,
+    required this.price,
     required this.isActive,
     required this.createdAt,
     this.businessName,
@@ -121,6 +123,7 @@ class LoyaltyProgram {
       rewardDescription: json['reward_description'] ?? '',
       rewardType: json['reward_type'] ?? '',
       images: images,
+      price: (json['price'] ?? 0).toDouble(),
       isActive: json['is_active'] ?? true,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
@@ -139,6 +142,7 @@ class LoyaltyProgram {
       'reward_description': rewardDescription,
       'reward_type': rewardType,
       'images': images.map((img) => img.toJson()).toList(),
+      'price': price,
       'is_active': isActive,
       'created_at': createdAt.toIso8601String(),
     };
@@ -152,6 +156,7 @@ class LoyaltyProgram {
     String? rewardDescription,
     String? rewardType,
     List<LoyaltyProgramImage>? images,
+    double? price,
     bool? isActive,
     DateTime? createdAt,
     String? businessName,
@@ -165,6 +170,7 @@ class LoyaltyProgram {
       rewardDescription: rewardDescription ?? this.rewardDescription,
       rewardType: rewardType ?? this.rewardType,
       images: images ?? this.images,
+      price: price ?? this.price,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       businessName: businessName ?? this.businessName,
