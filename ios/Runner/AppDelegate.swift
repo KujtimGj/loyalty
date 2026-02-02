@@ -58,13 +58,13 @@ extension AppDelegate: MessagingDelegate {
   }
 }
 
-// MARK: - UNUserNotificationCenterDelegate
+// MARK: - UNUserNotificationCenterDelegate (FlutterAppDelegate already conforms; override to customize)
 @available(iOS 10, *)
-extension AppDelegate: UNUserNotificationCenterDelegate {
+extension AppDelegate {
   // Handle notification when app is in foreground
-  func userNotificationCenter(_ center: UNUserNotificationCenter,
-                              willPresent notification: UNNotification,
-                              withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+  override func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                      willPresent notification: UNNotification,
+                                      withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
     let userInfo = notification.request.content.userInfo
     print("📱 Notification received in foreground: \(userInfo)")
     
@@ -77,9 +77,9 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
   }
   
   // Handle notification tap
-  func userNotificationCenter(_ center: UNUserNotificationCenter,
-                              didReceive response: UNNotificationResponse,
-                              withCompletionHandler completionHandler: @escaping () -> Void) {
+  override func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                      didReceive response: UNNotificationResponse,
+                                      withCompletionHandler completionHandler: @escaping () -> Void) {
     let userInfo = response.notification.request.content.userInfo
     print("📱 Notification tapped: \(userInfo)")
     

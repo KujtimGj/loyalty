@@ -2,20 +2,36 @@ import 'package:flutter/material.dart';
 import 'package:loyalty/core/dimensions.dart';
 import 'package:loyalty/core/ui.dart';
 import 'package:loyalty/features/components/components.dart';
+import 'package:provider/provider.dart';
 import '../../models/loyalty_program_model.dart';
+import '../../providers/customer_loyalty_card_provider.dart';
+import '../../providers/loyalty_program_provider.dart';
 
-class OfferDetail extends StatelessWidget {
+class OfferDetail extends StatefulWidget {
   final LoyaltyProgram loyaltyProgram;
-  final int currentStamps;
 
-  const OfferDetail({
-    super.key,
-    required this.loyaltyProgram,
-    this.currentStamps = 0,
-  });
+  const OfferDetail({super.key, required this.loyaltyProgram});
+
+  @override
+  State<OfferDetail> createState() => _OfferDetailState();
+}
+
+class _OfferDetailState extends State<OfferDetail> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context
+          .read<LoyaltyProgramProvider>()
+          .fetchActiveLoyaltyProgramsByBusiness(
+            widget.loyaltyProgram.businessId,
+          );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    final loyaltyProgram = widget.loyaltyProgram;
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 80,
@@ -73,28 +89,33 @@ class OfferDetail extends StatelessWidget {
                                 color: Colors.grey[200],
                                 shape: BoxShape.circle,
                               ),
-                              child: loyaltyProgram.businessLogoUrl != null
-                                  ? ClipOval(
-                                      child: Image.network(
-                                        loyaltyProgram.businessLogoUrl!,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return Container(
-                                            color: Colors.grey[300],
-                                            child: Icon(
-                                              Icons.business,
-                                              size: 20,
-                                              color: Colors.grey[600],
-                                            ),
-                                          );
-                                        },
+                              child:
+                                  loyaltyProgram.businessLogoUrl != null
+                                      ? ClipOval(
+                                        child: Image.network(
+                                          loyaltyProgram.businessLogoUrl!,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (
+                                            context,
+                                            error,
+                                            stackTrace,
+                                          ) {
+                                            return Container(
+                                              color: Colors.grey[300],
+                                              child: Icon(
+                                                Icons.business,
+                                                size: 20,
+                                                color: Colors.grey[600],
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      )
+                                      : Icon(
+                                        Icons.business,
+                                        size: 20,
+                                        color: Colors.grey[600],
                                       ),
-                                    )
-                                  : Icon(
-                                      Icons.business,
-                                      size: 20,
-                                      color: Colors.grey[600],
-                                    ),
                             ),
                             SizedBox(width: 8),
                             Text(
@@ -108,7 +129,7 @@ class OfferDetail extends StatelessWidget {
                           children: [
                             Text("Reward", style: TextStyle(fontSize: 12)),
                             Text(
-                              loyaltyProgram.rewardType,
+                              loyaltyProgram.rewardDescription,
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w600,
@@ -138,7 +159,7 @@ class OfferDetail extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          "Offers",
+                          "Oferta",
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
@@ -151,104 +172,45 @@ class OfferDetail extends StatelessWidget {
                         ),
                         SizedBox(width: 10),
                         Text(
-                          "Locations",
+                          "Lokacionet",
                           style: TextStyle(fontSize: 18, color: greyText),
                         ),
                       ],
                     ),
                     SizedBox(height: 20),
-                    Container(
-                      width: getWidth(context),
-                      padding: EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        border: Border.all(width: 1, color: primaryColor),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        children: [
-                          Image.asset("assets/kfc.png"),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Original Box",
-                                  style: TextStyle(
-                                    color: primaryTextColor,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                Text(
-                                  "5,99€",
-                                  style: TextStyle(
-                                    color: primaryColor,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                Text(
-                                  "1 Original Burger, 1 Drink, 1 French fries",
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    color: greyText,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 3,
-                                ),
-                              ],
+                    Consumer<LoyaltyProgramProvider>(
+                      builder: (context, loyaltyProgramProvider, _) {
+                        final otherPrograms =
+                            loyaltyProgramProvider.loyaltyPrograms
+                                .where((p) => p.id != loyaltyProgram.id)
+                                .toList();
+                        if (loyaltyProgramProvider.isLoading &&
+                            otherPrograms.isEmpty) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 24),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: primaryColor,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    Container(
-                      width: getWidth(context),
-                      padding: EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        border: Border.all(width: 1, color: primaryColor),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        children: [
-                          Image.asset("assets/kfc.png"),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Original Box",
-                                  style: TextStyle(
-                                    color: primaryTextColor,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                Text(
-                                  "5,99€",
-                                  style: TextStyle(
-                                    color: primaryColor,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                Text(
-                                  "1 Original Burger, 1 Drink, 1 French fries",
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    color: greyText,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 3,
-                                ),
-                              ],
+                          );
+                        }
+                        if (otherPrograms.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(height: 12),
+                            ...otherPrograms.map(
+                              (program) => Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: _OtherProgramCard(program: program),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        );
+                      },
                     ),
                     SizedBox(height: 150),
                   ],
@@ -268,43 +230,139 @@ class OfferDetail extends StatelessWidget {
                   top: BorderSide(color: secondBorderColor, width: 1),
                 ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      loyaltyProgram.stampsRequired,
-                      (index) {
-                        final isFilled = index < currentStamps;
-                        return Container(
-                          height: 30,
-                          width: 30,
-                          margin: EdgeInsets.only(
-                            right: loyaltyProgram.stampsRequired < 10 ? 10 : 5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isFilled ? primaryColor : Colors.grey[300],
-                            shape: BoxShape.circle,
-                            border: isFilled
-                                ? null
-                                : Border.all(
-                                    color: primaryColor.withOpacity(0.5),
-                                    width: 1.5,
-                                  ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  customButton(context,'Collect Reward'),
-                ],
+              child: Consumer<CustomerLoyaltyCardProvider>(
+                builder: (context, customerLoyaltyCardProvider, _) {
+                  final currentStamps = customerLoyaltyCardProvider
+                      .getStampsForProgram(loyaltyProgram.id);
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(loyaltyProgram.stampsRequired, (
+                          index,
+                        ) {
+                          final isFilled = index < currentStamps;
+                          return Container(
+                            height: 30,
+                            width: 30,
+                            margin: EdgeInsets.only(
+                              right:
+                                  loyaltyProgram.stampsRequired < 10 ? 10 : 5,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isFilled ? primaryColor : Colors.grey[300],
+                              shape: BoxShape.circle,
+                              border:
+                                  isFilled
+                                      ? null
+                                      : Border.all(
+                                        color: primaryColor.withOpacity(0.5),
+                                        width: 1.5,
+                                      ),
+                            ),
+                          );
+                        }),
+                      ),
+                      customButton(context, 'Collect Reward'),
+                    ],
+                  );
+                },
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _OtherProgramCard extends StatelessWidget {
+  final LoyaltyProgram program;
+
+  const _OtherProgramCard({required this.program});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OfferDetail(loyaltyProgram: program),
+          ),
+        );
+      },
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        width: getWidth(context),
+        padding: EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          border: Border.all(width: 1, color: primaryColor),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child:
+                  program.firstImageUrl != null
+                      ? Image.network(
+                        program.firstImageUrl!,
+                        height: 80,
+                        width: 80,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return _programImagePlaceholder(80);
+                        },
+                      )
+                      : program.businessLogoUrl != null
+                      ? Image.network(
+                        program.businessLogoUrl!,
+                        height: 80,
+                        width: 80,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return _programImagePlaceholder(80);
+                        },
+                      )
+                      : _programImagePlaceholder(80),
+            ),
+            SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    program.name,
+                    style: TextStyle(
+                      color: primaryTextColor,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    program.rewardDescription,
+                    style: TextStyle(fontSize: 15, color: greyText),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 3,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _programImagePlaceholder(double size) {
+    return Container(
+      height: size,
+      width: size,
+      color: Colors.grey[200],
+      child: Icon(Icons.card_giftcard, size: 32, color: Colors.grey[600]),
     );
   }
 }

@@ -20,31 +20,27 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  Future<void> _refreshData() async {
+    final businessProvider = Provider.of<BusinessProvider>(context, listen: false);
+    final loyaltyProgramProvider = Provider.of<LoyaltyProgramProvider>(context, listen: false);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final customerLoyaltyCardProvider = Provider.of<CustomerLoyaltyCardProvider>(context, listen: false);
+
+    final futures = <Future<void>>[
+      businessProvider.fetchAllBusinesses(),
+      loyaltyProgramProvider.fetchAllLoyaltyPrograms(),
+    ];
+    if (userProvider.userId != null && userProvider.userId!.isNotEmpty) {
+      futures.add(customerLoyaltyCardProvider.fetchForCustomer(userProvider.userId!));
+    }
+    await Future.wait(futures);
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final businessProvider = Provider.of<BusinessProvider>(
-        context,
-        listen: false,
-      );
-      final loyaltyProgramProvider = Provider.of<LoyaltyProgramProvider>(
-        context,
-        listen: false,
-      );
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      final customerLoyaltyCardProvider =
-          Provider.of<CustomerLoyaltyCardProvider>(context, listen: false);
-
-      if (businessProvider.businesses.isEmpty) {
-        businessProvider.fetchAllBusinesses();
-      }
-      if (loyaltyProgramProvider.loyaltyPrograms.isEmpty) {
-        loyaltyProgramProvider.fetchAllLoyaltyPrograms();
-      }
-      if (userProvider.userId != null && userProvider.userId!.isNotEmpty) {
-        customerLoyaltyCardProvider.fetchForCustomer(userProvider.userId!);
-      }
+      _refreshData();
     });
   }
 
@@ -80,233 +76,246 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.only(left: 10),
-          child: Column(
-            children: [
-              Consumer<LoyaltyProgramProvider>(
-                builder: (context, loyaltyProgramProvider, child) {
-                  if (loyaltyProgramProvider.isLoading) {
-                    return SizedBox(
-                      height: 300,
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  }
+      body: RefreshIndicator(
+        onRefresh: _refreshData,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 10),
+            child: Column(
+              children: [
+                Consumer2<LoyaltyProgramProvider, CustomerLoyaltyCardProvider>(
+                  builder: (context, loyaltyProgramProvider, customerLoyaltyCardProvider, child) {
+                    if (loyaltyProgramProvider.isLoading) {
+                      return SizedBox(
+                        height: 300,
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
 
-                  if (loyaltyProgramProvider.hasError) {
-                    return SizedBox(
-                      height: 300,
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.error_outline,
-                              size: 48,
-                              color: Colors.red,
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              'Error loading loyalty programs',
-                              style: TextStyle(color: Colors.red, fontSize: 12),
-                            ),
-                            SizedBox(height: 8),
-                            ElevatedButton(
-                              onPressed: () {
-                                loyaltyProgramProvider
-                                    .fetchAllLoyaltyPrograms();
-                              },
-                              child: Text('Retry'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }
-
-                  final programs =
-                      loyaltyProgramProvider.getActiveLoyaltyPrograms();
-
-                  if (programs.isEmpty) {
-                    return SizedBox(
-                      height: 300,
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.card_giftcard_outlined,
-                              size: 48,
-                              color: Colors.grey,
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              'No loyalty programs available',
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 14,
+                    if (loyaltyProgramProvider.hasError) {
+                      return SizedBox(
+                        height: 300,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                size: 48,
+                                color: Colors.red,
                               ),
-                            ),
-                          ],
+                              SizedBox(height: 8),
+                              Text(
+                                'Error loading loyalty programs',
+                                style: TextStyle(color: Colors.red, fontSize: 12),
+                              ),
+                              SizedBox(height: 8),
+                              ElevatedButton(
+                                onPressed: () {
+                                  loyaltyProgramProvider
+                                      .fetchAllLoyaltyPrograms();
+                                },
+                                child: Text('Retry'),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  }
+                      );
+                    }
 
-                  final customerLoyaltyCardProvider =
-                      Provider.of<CustomerLoyaltyCardProvider>(context);
-                  return SizedBox(
-                    height: 300,
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      scrollDirection: Axis.horizontal,
-                      itemCount: programs.length,
-                      itemBuilder: (context, index) {
-                        final program = programs[index];
-                        final currentStamps = customerLoyaltyCardProvider
-                            .getStampsForProgram(program.id);
-                        return _BusinessCard(
-                          loyaltyProgram: program,
-                          currentStamps: currentStamps,
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
-              SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Categories",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        color: primaryTextColor,
-                      ),
-                    ),
-                    Text(
-                      "View All",
-                      style: TextStyle(fontSize: 15, color: greyText),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                margin: EdgeInsets.only(top: 10),
-                height: 140,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: 8,
-                  itemBuilder: (BuildContext context, int index) {
-                    return Column(
-                      children: [
-                        Container(
-                          height: 100,
-                          width: 100,
-                          margin: EdgeInsets.symmetric(horizontal: 10),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: borderColor),
-                          ),
-                          child: Center(
-                            child: SvgPicture.asset("assets/clothes.svg"),
+                    final programs =
+                        loyaltyProgramProvider.getActiveLoyaltyPrograms();
+
+                    if (programs.isEmpty) {
+                      return SizedBox(
+                        height: 300,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.card_giftcard_outlined,
+                                size: 48,
+                                color: Colors.grey,
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'No loyalty programs available',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        Text("Clothes"),
-                      ],
+                      );
+                    }
+
+                    return SizedBox(
+                      height: 300,
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        scrollDirection: Axis.horizontal,
+                        itemCount: programs.length,
+                        itemBuilder: (context, index) {
+                          final program = programs[index];
+                          final currentStamps = customerLoyaltyCardProvider
+                              .getStampsForProgram(program.id);
+                          return _BusinessCard(
+                            loyaltyProgram: program,
+                            currentStamps: currentStamps,
+                          );
+                        },
+                      ),
                     );
                   },
                 ),
-              ),
-              SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Stores",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        color: primaryTextColor,
+                SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Categories",
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: primaryTextColor,
+                        ),
                       ),
-                    ),
-                    Text(
-                      "View All",
-                      style: TextStyle(fontSize: 15, color: greyText),
-                    ),
-                  ],
+                      Text(
+                        "View All",
+                        style: TextStyle(fontSize: 15, color: greyText),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              Consumer<BusinessProvider>(
-                builder: (context, businessProvider, child) {
-                  if (businessProvider.isLoading) {
-                    return SizedBox(
-                      height: 100,
-                      width: getWidth(context),
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  }
-
-                  if (businessProvider.hasError) {
-                    return SizedBox(
-                      height: 100,
-                      width: getWidth(context),
-                      child: Center(
-                        child: Text(
-                          'Error loading businesses',
-                          style: TextStyle(color: Colors.red, fontSize: 12),
-                        ),
-                      ),
-                    );
-                  }
-
-                  if (businessProvider.businesses.isEmpty) {
-                    return SizedBox(
-                      height: 100,
-                      width: getWidth(context),
-                      child: Center(
-                        child: Text(
-                          'No businesses found',
-                          style: TextStyle(color: Colors.grey, fontSize: 12),
-                        ),
-                      ),
-                    );
-                  }
-
-                  return SizedBox(
-                    height: 100,
-                    width: getWidth(context),
-                    child: ListView.builder(
-                      itemCount: businessProvider.businesses.length,
-                      scrollDirection: Axis.horizontal,
-                      shrinkWrap: true,
-                      itemBuilder: (context, index) {
-                        final business = businessProvider.businesses[index];
-                        return Container(
-                          height: 80,
-                          width: 80,
-                          margin: EdgeInsets.only(right: 10),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.grey[200],
-                            image: DecorationImage(
-                              image: NetworkImage(business.logoUrl!),
+                Container(
+                  margin: EdgeInsets.only(top: 10),
+                  height: 140,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: 8,
+                    itemBuilder: (BuildContext context, int index) {
+                      return Column(
+                        children: [
+                          Container(
+                            height: 100,
+                            width: 100,
+                            margin: EdgeInsets.symmetric(horizontal: 10),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: borderColor),
+                            ),
+                            child: Center(
+                              child: SvgPicture.asset("assets/clothes.svg"),
                             ),
                           ),
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
-            ],
+                          Text("Clothes"),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+                SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Stores",
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: primaryTextColor,
+                        ),
+                      ),
+                      Text(
+                        "View All",
+                        style: TextStyle(fontSize: 15, color: greyText),
+                      ),
+                    ],
+                  ),
+                ),
+                Consumer<BusinessProvider>(
+                  builder: (context, businessProvider, child) {
+                    if (businessProvider.isLoading) {
+                      return SizedBox(
+                        height: 100,
+                        width: getWidth(context),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+
+                    if (businessProvider.hasError) {
+                      return SizedBox(
+                        height: 100,
+                        width: getWidth(context),
+                        child: Center(
+                          child: Text(
+                            'Error loading businesses',
+                            style: TextStyle(color: Colors.red, fontSize: 12),
+                          ),
+                        ),
+                      );
+                    }
+
+                    if (businessProvider.businesses.isEmpty) {
+                      return SizedBox(
+                        height: 100,
+                        width: getWidth(context),
+                        child: Center(
+                          child: Text(
+                            'No businesses found',
+                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                          ),
+                        ),
+                      );
+                    }
+
+                    return SizedBox(
+                      height: 100,
+                      width: getWidth(context),
+                      child: ListView.builder(
+                        itemCount: businessProvider.businesses.length,
+                        scrollDirection: Axis.horizontal,
+                        shrinkWrap: true,
+                        itemBuilder: (context, index) { 
+                          final business = businessProvider.businesses[index];
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Container(
+                                height: 80,
+                                width: 80,
+                                margin: EdgeInsets.only(right: 10),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.grey[200],
+                                  image: business.logoUrl != null && business.logoUrl!.isNotEmpty
+                                      ? DecorationImage(
+                                          image: NetworkImage(business.logoUrl!),
+                                          fit: BoxFit.cover,
+                                        )
+                                      : null,
+                                ),
+                                child: business.logoUrl == null || business.logoUrl!.isEmpty
+                                    ? Icon(Icons.store, size: 40, color: Colors.grey[600])
+                                    : null,
+                              ),
+                              Text(business.name)
+                            ],
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -327,11 +336,7 @@ class _BusinessCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder:
-                (_) => OfferDetail(
-                  loyaltyProgram: loyaltyProgram,
-                  currentStamps: currentStamps,
-                ),
+            builder: (_) => OfferDetail(loyaltyProgram: loyaltyProgram),
           ),
         );
       },

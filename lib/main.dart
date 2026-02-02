@@ -28,13 +28,13 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({super.key});         
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(
+        ChangeNotifierProvider( 
           create: (_) {
             return BusinessProvider();
           },
@@ -123,12 +123,17 @@ class _BaseState extends State<Base> {
   @override
   void initState() {
     super.initState();
-    _loadInitialData();
+    // Defer data load until after build completes to avoid setState/markNeedsBuild during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadInitialData();
+    });
   }
 
   Future<void> _loadInitialData() async {
     final businessProvider = Provider.of<BusinessProvider>(context, listen: false);
     final loyaltyProgramProvider = Provider.of<LoyaltyProgramProvider>(context, listen: false);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final customerLoyaltyCardProvider = Provider.of<CustomerLoyaltyCardProvider>(context, listen: false);
 
     // Load data if not already loaded
     if (businessProvider.businesses.isEmpty || loyaltyProgramProvider.loyaltyPrograms.isEmpty) {
@@ -136,6 +141,11 @@ class _BaseState extends State<Base> {
         businessProvider.fetchAllBusinesses(),
         loyaltyProgramProvider.fetchAllLoyaltyPrograms(),
       ]);
+    }
+
+    // Load customer loyalty cards (for stamp display) when user is logged in
+    if (userProvider.userId != null && userProvider.userId!.isNotEmpty) {
+      await customerLoyaltyCardProvider.fetchForCustomer(userProvider.userId!);
     }
 
     if (mounted) {
