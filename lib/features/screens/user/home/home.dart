@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:loyalty/core/dimensions.dart';
 import 'package:loyalty/core/ui.dart';
+import 'package:loyalty/features/screens/user/home/business_detail.dart';
 import 'package:loyalty/features/screens/user/search.dart';
+import 'package:loyalty/features/screens/user/secondary/category.dart';
 import 'package:provider/provider.dart';
-import '../../providers/business_provider.dart';
-import '../../providers/loyalty_program_provider.dart';
-import '../../providers/customer_loyalty_card_provider.dart';
-import '../../providers/user_provider.dart';
-import '../../models/loyalty_program_model.dart';
+import '../../../providers/business_provider.dart';
+import '../../../providers/loyalty_program_provider.dart';
+import '../../../providers/customer_loyalty_card_provider.dart';
+import '../../../providers/user_provider.dart';
+import '../../../models/loyalty_program_model.dart';
 import "package:flutter_svg/flutter_svg.dart";
 
 import 'offer_detail.dart';
@@ -19,19 +21,35 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+const _categories = [
+  ("assets/categories/clothes.svg", "Clothes"),
+  ("assets/categories/groceries.svg", "Groceries"),
+  ("assets/categories/gas.svg", "Gas Stations"),
+  ("assets/categories/food.svg", "Food"),
+];
+
 class _HomePageState extends State<HomePage> {
   Future<void> _refreshData() async {
-    final businessProvider = Provider.of<BusinessProvider>(context, listen: false);
-    final loyaltyProgramProvider = Provider.of<LoyaltyProgramProvider>(context, listen: false);
+    final businessProvider = Provider.of<BusinessProvider>(
+      context,
+      listen: false,
+    );
+    final loyaltyProgramProvider = Provider.of<LoyaltyProgramProvider>(
+      context,
+      listen: false,
+    );
     final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final customerLoyaltyCardProvider = Provider.of<CustomerLoyaltyCardProvider>(context, listen: false);
+    final customerLoyaltyCardProvider =
+        Provider.of<CustomerLoyaltyCardProvider>(context, listen: false);
 
     final futures = <Future<void>>[
       businessProvider.fetchAllBusinesses(),
       loyaltyProgramProvider.fetchAllLoyaltyPrograms(),
     ];
     if (userProvider.userId != null && userProvider.userId!.isNotEmpty) {
-      futures.add(customerLoyaltyCardProvider.fetchForCustomer(userProvider.userId!));
+      futures.add(
+        customerLoyaltyCardProvider.fetchForCustomer(userProvider.userId!),
+      );
     }
     await Future.wait(futures);
   }
@@ -78,17 +96,46 @@ class _HomePageState extends State<HomePage> {
       ),
       body: RefreshIndicator(
         onRefresh: _refreshData,
+        color: primaryColor,
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.only(left: 10),
             child: Column(
               children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Active Offers",
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: primaryTextColor,
+                        ),
+                      ),
+                       GestureDetector(
+                         onTap: (){
+                           Navigator.push(context, MaterialPageRoute(builder: (_)=>Category()));
+                         },
+                         child: Text(
+                          "View All",
+                          style: TextStyle(fontSize: 15, color: greyText),
+                                               ),
+                       ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 10),
                 Consumer2<LoyaltyProgramProvider, CustomerLoyaltyCardProvider>(
-                  builder: (context, loyaltyProgramProvider, customerLoyaltyCardProvider, child) {
+                  builder: (context, loyaltyProgramProvider, customerLoyaltyCardProvider, child,) {
                     if (loyaltyProgramProvider.isLoading) {
                       return SizedBox(
                         height: 300,
-                        child: Center(child: CircularProgressIndicator()),
+                        child: Center(
+                          child: CircularProgressIndicator(color: primaryColor),
+                        ),
                       );
                     }
 
@@ -107,7 +154,10 @@ class _HomePageState extends State<HomePage> {
                               SizedBox(height: 8),
                               Text(
                                 'Error loading loyalty programs',
-                                style: TextStyle(color: Colors.red, fontSize: 12),
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 12,
+                                ),
                               ),
                               SizedBox(height: 8),
                               ElevatedButton(
@@ -178,7 +228,7 @@ class _HomePageState extends State<HomePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Categories",
+                        "Food & Coffee",
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
@@ -192,29 +242,87 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                 ),
-                Container(
-                  margin: EdgeInsets.only(top: 10),
-                  height: 140,
+                SizedBox(height: 10),
+                SizedBox(
+                  height: 270,
+                  width: getWidth(context),
                   child: ListView.builder(
+                    physics: ClampingScrollPhysics(),
+                    shrinkWrap: true,
                     scrollDirection: Axis.horizontal,
-                    itemCount: 8,
-                    itemBuilder: (BuildContext context, int index) {
-                      return Column(
-                        children: [
-                          Container(
-                            height: 100,
-                            width: 100,
-                            margin: EdgeInsets.symmetric(horizontal: 10),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(color: borderColor),
+                    itemCount: 5,
+                    itemBuilder: (context, index) {
+                      return Container(
+                        padding: EdgeInsets.all(10),
+                        margin: EdgeInsets.only(right: 10),
+                        width: 300,
+                        decoration: BoxDecoration(
+                          border: Border.all(width: 1, color: primaryColor),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Center(child: Image.asset("assets/kfc2.png",height: 150,)),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          "Sach Attack",
+                                          style: TextStyle(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        Text(
+                                          " 5,99€",
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: primaryColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Text("Sach Pizza"),
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text("Reward",style: TextStyle(fontSize: 10,)),
+                                    Text("Free Meal",style: TextStyle(fontSize: 14,fontWeight: FontWeight.w600),)
+                                  ],
+                                )
+                              ],
                             ),
-                            child: Center(
-                              child: SvgPicture.asset("assets/clothes.svg"),
-                            ),
-                          ),
-                          Text("Clothes"),
-                        ],
+                            SizedBox(height: 10),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ...List.generate(8, (_) => Padding(
+                                  padding: const EdgeInsets.only(right: 4),
+                                  child: Container(
+                                    height: 20,
+                                    width: 20,
+                                    decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: unfilledStamp
+                                    ),
+                                  ),
+                                )),
+                                Text("8 vula"),
+                              ],
+                            )
+                          ], 
+                        ),
                       );
                     },
                   ),
@@ -240,13 +348,16 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                 ),
+                SizedBox(height: 10),
                 Consumer<BusinessProvider>(
                   builder: (context, businessProvider, child) {
                     if (businessProvider.isLoading) {
                       return SizedBox(
                         height: 100,
                         width: getWidth(context),
-                        child: Center(child: CircularProgressIndicator()),
+                        child: Center(
+                          child: CircularProgressIndicator(color: primaryColor),
+                        ),
                       );
                     }
 
@@ -283,37 +394,53 @@ class _HomePageState extends State<HomePage> {
                         itemCount: businessProvider.businesses.length,
                         scrollDirection: Axis.horizontal,
                         shrinkWrap: true,
-                        itemBuilder: (context, index) { 
+                        itemBuilder: (context, index) {
                           final business = businessProvider.businesses[index];
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Container(
-                                height: 80,
-                                width: 80,
-                                margin: EdgeInsets.only(right: 10),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.grey[200],
-                                  image: business.logoUrl != null && business.logoUrl!.isNotEmpty
-                                      ? DecorationImage(
-                                          image: NetworkImage(business.logoUrl!),
-                                          fit: BoxFit.cover,
-                                        )
-                                      : null,
+                          return GestureDetector(
+                            onTap: (){
+                              Navigator.push(context, MaterialPageRoute(builder: (_)=>BusinessDetailPage(business: business)));
+                            },
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Container(
+                                  height: 80,
+                                  width: 80,
+                                  margin: EdgeInsets.only(right: 10),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.grey[200],
+                                    image:
+                                        business.logoUrl != null &&
+                                                business.logoUrl!.isNotEmpty
+                                            ? DecorationImage(
+                                              image: NetworkImage(
+                                                business.logoUrl!,
+                                              ),
+                                              fit: BoxFit.cover,
+                                            )
+                                            : null,
+                                  ),
+                                  child:
+                                      business.logoUrl == null ||
+                                              business.logoUrl!.isEmpty
+                                          ? Icon(
+                                            Icons.store,
+                                            size: 40,
+                                            color: Colors.grey[600],
+                                          )
+                                          : null,
                                 ),
-                                child: business.logoUrl == null || business.logoUrl!.isEmpty
-                                    ? Icon(Icons.store, size: 40, color: Colors.grey[600])
-                                    : null,
-                              ),
-                              Text(business.name)
-                            ],
+                                Text(business.name),
+                              ],
+                            ),
                           );
                         },
                       ),
                     );
                   },
                 ),
+                SizedBox(height: 20),
               ],
             ),
           ),

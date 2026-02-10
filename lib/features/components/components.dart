@@ -6,11 +6,11 @@ import 'package:loyalty/core/ui.dart';
 
 customButton(context,text){
   return Container(
-    height: 65,
-    width: getWidth(context)*0.75,
+    height: 55,
+    width: getWidth(context),
     decoration: BoxDecoration(
       color: primaryColor,
-      borderRadius: BorderRadius.circular(15),
+      borderRadius: BorderRadius.circular(10),
     ),
     child: Center(
         child: Text(text,style: TextStyle(fontSize: 18,color: primaryTextColor),)
@@ -18,7 +18,20 @@ customButton(context,text){
   );
 }
 
-categoryBox(BuildContext context) {
+outlinedButton(context,text){
+  return Container(
+    width: getWidth(context),
+    height: 55,
+    decoration: BoxDecoration(
+      border: Border.all(width: 1, color:secondBorderColor)
+    ),
+    child: Center(
+      child: Text(text),
+    ),
+  );
+}
+
+categoryBox(BuildContext context, String assetPath, String label) {
   return Column(
     mainAxisSize: MainAxisSize.min,
     children: [
@@ -30,11 +43,11 @@ categoryBox(BuildContext context) {
           border: Border.all(color: borderColor),
         ),
         child: Center(
-          child: SvgPicture.asset("assets/clothes.svg"),
+          child: SvgPicture.asset(assetPath),
         ),
       ),
       SizedBox(height: 8),
-      Text("Clothes"),
+      Text(label),
     ],
   );
 }

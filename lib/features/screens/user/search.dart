@@ -4,8 +4,22 @@ import 'package:loyalty/core/dimensions.dart';
 import 'package:loyalty/core/ui.dart';
 import 'package:loyalty/features/components/components.dart';
 
-class Search extends StatelessWidget {
+class Search extends StatefulWidget {
   const Search({super.key});
+
+  @override
+  State<Search> createState() => _SearchState();
+}
+
+const _categories = [
+  ("assets/categories/clothes.svg", "Clothes"),
+  ("assets/categories/groceries.svg", "Groceries"),
+  ("assets/categories/gas.svg", "Gas Stations"),
+  ("assets/categories/food.svg", "Food"),
+];
+
+
+class _SearchState extends State<Search> {
 
   @override
   Widget build(BuildContext context) {
@@ -62,9 +76,10 @@ class Search extends StatelessWidget {
             children: [
               SizedBox(height: 10),
               Text(
-                "Explore",
+                "Eksploro",
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
               ),
+              SizedBox(height: 20),
               SizedBox(
                 width: getWidth(context),
                 child: GridView.builder(
@@ -75,9 +90,10 @@ class Search extends StatelessWidget {
                     mainAxisSpacing: 3,
                     crossAxisSpacing: 4,
                   ),
-                  itemCount: 5,
+                  itemCount: _categories.length,
                   itemBuilder: (context, index) {
-                    return categoryBox(context);
+                    final (iconPath, label) = _categories[index];
+                    return categoryBox(context, iconPath, label);
                   },
                 ),
               ),
@@ -85,14 +101,98 @@ class Search extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "Popular offers",
+                    "Ofertat e fundit",
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
                   ),
-                  Text("View all",
+                  Text("Shiko të gjitha",
                     style: TextStyle(fontSize: 15, color: greyText),
                   )
                 ],
               ),
+              SizedBox(height: 20),
+              SizedBox(
+                height: 270,
+                width: getWidth(context),
+                child: ListView.builder(
+                  itemCount: 4,
+                  scrollDirection: Axis.horizontal,
+                  shrinkWrap: true,
+                  itemBuilder: (context,index){
+                    return Container(
+                      padding: EdgeInsets.all(10),
+                      margin: EdgeInsets.only(right: 10),
+                      width: 300,
+                      decoration: BoxDecoration(
+                        border: Border.all(width: 1, color: primaryColor),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Center(child: Image.asset("assets/kfc2.png",height: 150,)),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        "Sach Attack",
+                                        style: TextStyle(
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        " 5,99€",
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: primaryColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Text("Sach Pizza"),
+                                ],
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text("Reward",style: TextStyle(fontSize: 10,)),
+                                  Text("Free Meal",style: TextStyle(fontSize: 14,fontWeight: FontWeight.w600),)
+                                ],
+                              )
+                            ],
+                          ),
+                          SizedBox(height: 10),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ...List.generate(8, (_) => Padding(
+                                padding: const EdgeInsets.only(right: 4),
+                                child: Container(
+                                  height: 20,
+                                  width: 20,
+                                  decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: unfilledStamp
+                                  ),
+                                ),
+                              )),
+                              Text("8 vula"),
+                            ],
+                          )
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              )
             ],
           ),
         ),

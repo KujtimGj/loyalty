@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:dartz/dartz.dart';
 import '../models/loyalty_program_model.dart';
 import '../controllers/loyalty_program_controller.dart';
 import '../../core/failures.dart';
@@ -15,8 +14,6 @@ class LoyaltyProgramProvider with ChangeNotifier {
   String? get error => _failure?.toString();
   bool get hasError => _failure != null;
 
-  /// Fetch all loyalty programs from the API
-  /// Updates the loyalty programs list and notifies listeners
   Future<void> fetchAllLoyaltyPrograms() async {
     _isLoading = true;
     _failure = null;

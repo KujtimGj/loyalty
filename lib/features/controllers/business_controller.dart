@@ -32,7 +32,7 @@ class BusinessController {
               .toList();
           
           return Right(businesses);
-        } catch (e, stackTrace) {
+        } catch (e) {
           return Left(ParseFailure(
             'Failed to parse businesses: ${e.toString()}',
           ));
@@ -53,7 +53,7 @@ class BusinessController {
           statusCode: response.statusCode,
         ));
       }
-    } on http.ClientException catch (e, stackTrace) {
+    } on http.ClientException catch (e) {
       return Left(NetworkFailure(
         'Network error: ${e.message}',
       ));
@@ -84,7 +84,7 @@ class BusinessController {
           final jsonData = json.decode(response.body);
           final business = Business.fromJson(jsonData);
           return Right(business);
-        } catch (e, stackTrace) {
+        } catch (e ) {
           return Left(ParseFailure(
             'Failed to parse business: ${e.toString()}',
           ));
@@ -105,11 +105,11 @@ class BusinessController {
           statusCode: response.statusCode,
         ));
       }
-    } on http.ClientException catch (e, stackTrace) {
+    } on http.ClientException catch (e ) {
       return Left(NetworkFailure(
         'Network error: ${e.message}',
       ));
-    } catch (e, stackTrace) {
+    } catch (e ) {
       return Left(NetworkFailure(
         'Unexpected error: ${e.toString()}',
       ));

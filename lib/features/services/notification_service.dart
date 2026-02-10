@@ -119,7 +119,6 @@ class NotificationService {
         await _createAndroidChannels();
       }
 
-      print('✅ Local notifications initialized successfully');
     } catch (e) {
       print('❌ Error initializing local notifications: $e');
       rethrow; // Re-throw to be caught by outer try-catch

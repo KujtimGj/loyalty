@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../models/business_model.dart';
-import '../../models/loyalty_program_model.dart';
-import '../../controllers/loyalty_program_controller.dart';
-import '../../../core/failures.dart';
+import '../../../../core/dimensions.dart';
+import '../../../../core/ui.dart';
+import '../../../models/business_model.dart';
+import '../../../models/loyalty_program_model.dart';
+import '../../../controllers/loyalty_program_controller.dart';
+import '../../../../core/failures.dart';
 
 class BusinessDetailPage extends StatefulWidget {
   final Business business;
@@ -63,7 +65,19 @@ class _BusinessDetailPageState extends State<BusinessDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.business.name),
+        centerTitle: true,
+        title: Row(
+          children: [
+            Image.network("${widget.business.logoUrl}",width: 50,height: 50,),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(widget.business.name),
+                Text(widget.business.email)
+              ],
+            ),
+          ],
+        ),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -71,8 +85,6 @@ class _BusinessDetailPageState extends State<BusinessDetailPage> {
           children: [
             // Business Details Section
             _buildBusinessDetailsSection(),
-            const Divider(),
-            // Loyalty Programs Section
             _buildLoyaltyProgramsSection(),
           ],
         ),
@@ -87,80 +99,15 @@ class _BusinessDetailPageState extends State<BusinessDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Business Details',
+            'Business Information',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
           ),
-          const SizedBox(height: 16),
-          _buildDetailRow(
-            icon: Icons.business,
-            label: 'Name',
-            value: widget.business.name,
-          ),
           const SizedBox(height: 12),
-          _buildDetailRow(
-            icon: Icons.email,
-            label: 'Email',
-            value: widget.business.email,
-          ),
-          const SizedBox(height: 12),
-          _buildDetailRow(
-            icon: Icons.phone,
-            label: 'Phone',
-            value: widget.business.phone,
-          ),
-          const SizedBox(height: 12),
-          _buildDetailRow(
-            icon: Icons.subscriptions,
-            label: 'Subscription Status',
-            value: widget.business.subscriptionStatus.toUpperCase(),
-          ),
-          const SizedBox(height: 12),
-          _buildDetailRow(
-            icon: Icons.workspace_premium,
-            label: 'Plan',
-            value: widget.business.plan.toUpperCase(),
-          ),
+          Text(widget.business.name)
         ],
       ),
-    );
-  }
-
-  Widget _buildDetailRow({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 20, color: Colors.grey[600]),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 
@@ -174,7 +121,7 @@ class _BusinessDetailPageState extends State<BusinessDetailPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Loyalty Programs',
+                'Ofertat',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -266,81 +213,130 @@ class _BusinessDetailPageState extends State<BusinessDetailPage> {
   }
 
   Widget _buildLoyaltyProgramCard(LoyaltyProgram program) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    program.name,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+    return Container(
+      width: getWidth(context),
+      padding: EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        border: Border.all(width: 1, color: primaryColor),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center ,
+        children: [
+          Row(
+            children: [
+              Image.network("${program.businessLogoUrl}", height: 120,),
+              SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      program.name,
+                      style: TextStyle(
+                        color: primaryTextColor,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: program.isActive
-                        ? Colors.green.withOpacity(0.2)
-                        : Colors.grey.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: program.isActive ? Colors.green : Colors.grey,
+                    Text(
+                      program.price.toString(),
+                      style: TextStyle(
+                        color: primaryColor,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    program.isActive ? 'ACTIVE' : 'INACTIVE',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: program.isActive ? Colors.green[700] : Colors.grey[700],
+                    Text(
+                      program.rewardDescription,
+                      style: TextStyle(fontSize: 12, color: greyText),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 3,
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Icon(Icons.star, size: 20, color: Colors.amber),
-                const SizedBox(width: 8),
-                Text(
-                  '${program.stampsRequired} stamps required',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                height: 25,
+                width: 25,
+                margin: EdgeInsets.only(right: 10),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: kfcRed,
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.card_giftcard, size: 20, color: Colors.blue),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    program.rewardDescription,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.black87,
-                    ),
-                  ),
+              ),
+              Container(
+                height: 25,
+                width: 25,
+                margin: EdgeInsets.only(right: 10),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: kfcRed,
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+              Container(
+                height: 25,
+                width: 25,
+                margin: EdgeInsets.only(right: 10),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: kfcRed,
+                ),
+              ),
+              Container(
+                height: 25,
+                width: 25,
+                margin: EdgeInsets.only(right: 10),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: kfcRed,
+                ),
+              ),
+              Container(
+                height: 25,
+                width: 25,
+                margin: EdgeInsets.only(right: 10),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: kfcRed,
+                ),
+              ),
+              Container(
+                height: 25,
+                width: 25,
+                margin: EdgeInsets.only(right: 10),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: kfcRed,
+                ),
+              ),
+              Container(
+                height: 25,
+                width: 25,
+                margin: EdgeInsets.only(right: 10),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: kfcRed,
+                ),
+              ),
+              Container(
+                height: 25,
+                width: 25,
+                margin: EdgeInsets.only(right: 10),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: kfcRed,
+                ),
+              ),
+            ],
+          )
+        ],
       ),
     );
   }

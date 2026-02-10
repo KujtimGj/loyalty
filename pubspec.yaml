@@ -54,6 +54,9 @@ flutter:
   assets:
      - assets/
      - assets/nav/
+     - assets/profile/
+     - assets/onboard/
+     - assets/categories/
 
   # fonts:
   #   - family: Schyler

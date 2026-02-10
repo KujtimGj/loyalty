@@ -3,9 +3,9 @@ import 'package:loyalty/core/dimensions.dart';
 import 'package:loyalty/core/ui.dart';
 import 'package:loyalty/features/components/components.dart';
 import 'package:provider/provider.dart';
-import '../../models/loyalty_program_model.dart';
-import '../../providers/customer_loyalty_card_provider.dart';
-import '../../providers/loyalty_program_provider.dart';
+import '../../../models/loyalty_program_model.dart';
+import '../../../providers/customer_loyalty_card_provider.dart';
+import '../../../providers/loyalty_program_provider.dart';
 
 class OfferDetail extends StatefulWidget {
   final LoyaltyProgram loyaltyProgram;

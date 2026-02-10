@@ -23,8 +23,6 @@ class AuthResponse {
 }
 
 class AuthController {
-  /// Sign up a new user
-  /// Returns Either<Failure, AuthResponse>
   static Future<Either<Failure, AuthResponse>> signup({
     required String name,
     required String phone,
@@ -32,11 +30,8 @@ class AuthController {
     required String password,
   }) async {
     final url = CustomerEndpoints.signup();
-    print('🔵 [AuthController] Starting signup');
-    print('🔵 [AuthController] URL: $url');
 
     try {
-      print('🔵 [AuthController] Making HTTP POST request...');
       final response = await http.post(
         Uri.parse(url),
         headers: {
@@ -50,17 +45,11 @@ class AuthController {
         }),
       );
 
-      print('🔵 [AuthController] Response received');
-      print('🔵 [AuthController] Status Code: ${response.statusCode}');
-      print('🔵 [AuthController] Response Body: ${response.body}');
-
       if (response.statusCode == 201) {
         try {
-          print('🔵 [AuthController] Parsing JSON response...');
           final jsonData = json.decode(response.body);
           // Signup returns just the customer, no token
           final user = User.fromJson(jsonData);
-          print('✅ [AuthController] Successfully signed up user: ${user.name}');
           // For signup, we'll return a response without token (user needs to login)
           return Right(AuthResponse(user: user, token: ''));
         } catch (e, stackTrace) {
@@ -102,19 +91,12 @@ class AuthController {
     }
   }
 
-  /// Login user
-  /// Returns Either<Failure, AuthResponse>
   static Future<Either<Failure, AuthResponse>> login({
     required String email,
     required String password,
   }) async {
     final url = CustomerEndpoints.login();
-    print('🔵 [AuthController] Starting login');
-    print('🔵 [AuthController] URL: $url');
-    print('🔵 [AuthController] Email: $email');
-
     try {
-      print('🔵 [AuthController] Making HTTP POST request...');
       final response = await http.post(
         Uri.parse(url),
         headers: {
@@ -125,10 +107,6 @@ class AuthController {
           'password': password,
         }),
       );
-
-      print('🔵 [AuthController] Response received');
-      print('🔵 [AuthController] Status Code: ${response.statusCode}');
-      print('🔵 [AuthController] Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         try {

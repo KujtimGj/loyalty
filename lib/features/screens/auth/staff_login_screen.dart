@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:loyalty/core/dimensions.dart';
+import 'package:loyalty/core/ui.dart';
 import 'package:provider/provider.dart';
 import '../../providers/business_user_provider.dart';
 import '../../controllers/business_user_controller.dart';
@@ -22,33 +23,8 @@ class _StaffLoginScreenState extends State<StaffLoginScreen>
   bool _obscurePassword = true;
   Failure? _error;
   late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<Offset> _slideAnimation;
 
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ),
-    );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeOutCubic,
-      ),
-    );
-    _animationController.forward();
-  }
+
 
   @override
   void dispose() {
@@ -400,10 +376,7 @@ class _StaffLoginScreenState extends State<StaffLoginScreen>
                                   width: 24,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2.5,
-                                    valueColor:
-                                    AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
-                                    ),
+                                    color: primaryColor,
                                   ),
                                 )
                                     : Row(

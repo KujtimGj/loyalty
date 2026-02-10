@@ -4,12 +4,13 @@ import 'package:provider/provider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:firebase_core/firebase_core.dart';
 
-import 'features/screens/user/home.dart';
-import 'features/screens/user/profile.dart';
+import 'features/screens/user/home/home.dart';
+import 'features/screens/user/profile/profile.dart';
 import 'features/screens/user/qrcode.dart';
 import 'features/screens/user/stamps.dart';
 import 'features/screens/auth/welcome_screen.dart';
 import 'features/screens/employee/staff_scanner_screen.dart';
+import 'features/screens/splash_screen.dart';
 import 'features/providers/business_provider.dart';
 import 'features/providers/user_provider.dart';
 import 'features/providers/business_user_provider.dart';
@@ -67,7 +68,9 @@ class MyApp extends StatelessWidget {
           appBarTheme: AppBarTheme(backgroundColor: Colors.white),
           scaffoldBackgroundColor: Colors.white,
         ),
-        home: const AuthWrapper(),
+        home: const SplashScreen(
+          child: AuthWrapper(),
+        ),
       ),
     );
   }
@@ -162,7 +165,7 @@ class _BaseState extends State<Base> {
       return Scaffold(
         backgroundColor: Colors.white,
         body: const Center(
-          child: CircularProgressIndicator(),
+          child: CircularProgressIndicator(color: primaryColor,),
         ),
       );
     }
