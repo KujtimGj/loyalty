@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:loyalty/core/dimensions.dart';
 import 'package:loyalty/core/ui.dart';
 import 'package:provider/provider.dart';
@@ -12,8 +13,6 @@ import '../../../main.dart';
 import 'signup_screen.dart';
 import '../employee/staff_scanner_screen.dart';
 
-/// Single login screen for both customers (users) and employees.
-/// Tries customer login first; if that fails with invalid credentials, tries employee login.
 class UnifiedLoginScreen extends StatefulWidget {
   const UnifiedLoginScreen({super.key});
 
@@ -47,11 +46,9 @@ class _UnifiedLoginScreenState extends State<UnifiedLoginScreen> {
     final businessProvider = Provider.of<BusinessProvider>(context, listen: false);
     final loyaltyProgramProvider = Provider.of<LoyaltyProgramProvider>(context, listen: false);
 
-    // 1) Try customer login first
     final customerResult = await AuthController.login(email: email, password: password);
 
-    customerResult.fold(
-      (failure) async {
+    customerResult.fold((failure) async {
         // 2) Customer failed → try employee login
         final employeeResult = await BusinessUserController.login(email, password);
 
@@ -123,6 +120,51 @@ class _UnifiedLoginScreenState extends State<UnifiedLoginScreen> {
     );
   }
 
+  Future<void> _handleGoogleSignIn() async {
+    if (_isLoading) return;
+
+    setState(() => _isLoading = true);
+
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final businessProvider = Provider.of<BusinessProvider>(context, listen: false);
+    final loyaltyProgramProvider = Provider.of<LoyaltyProgramProvider>(context, listen: false);
+
+    // Google Sign-In is only for customers, not employees
+    final result = await userProvider.googleSignIn();
+
+    result.fold(
+      (failure) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(failure.message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      (user) async {
+        // Load all required data before navigating
+        try {
+          await Future.wait([
+            businessProvider.fetchAllBusinesses(),
+            loyaltyProgramProvider.fetchAllLoyaltyPrograms(),
+          ]);
+        } catch (e) {
+          print('Error loading initial data: $e');
+        }
+        if (mounted) {
+          setState(() => _isLoading = false);
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const Base()),
+            (route) => false,
+          );
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -142,7 +184,7 @@ class _UnifiedLoginScreenState extends State<UnifiedLoginScreen> {
                     children: [
                       const SizedBox(height: 40),
                       Text(
-                        'Login',
+                        'Hyrje',
                         style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -150,21 +192,21 @@ class _UnifiedLoginScreenState extends State<UnifiedLoginScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Sign in as customer or staff',
+                        'Hyni si klient ose staf',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey[600],
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 10),
                       Text("Email"),
                       const SizedBox(height: 10),
                       TextFormField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
-                          hintText: 'Enter your email',
+                          hintText: 'Shkruani email-in tuaj',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide(color: secondBorderColor),
@@ -179,19 +221,19 @@ class _UnifiedLoginScreenState extends State<UnifiedLoginScreen> {
                           ),
                         ),
                         validator: (value) {
-                          if (value == null || value.isEmpty) return 'Please enter your email';
-                          if (!value.contains('@')) return 'Please enter a valid email';
+                          if (value == null || value.isEmpty) return 'Ju lutemi shkruani email-in tuaj';
+                          if (!value.contains('@')) return 'Ju lutemi shkruani një email të vlefshëm';
                           return null;
                         },
                       ),
-                      const SizedBox(height: 20),
-                      Text("Password"),
+                      const SizedBox(height: 10),
+                      Text("Fjalëkalimi"),
                       const SizedBox(height: 10),
                       TextFormField(
                         controller: _passwordController,
                         obscureText: _obscurePassword,
                         decoration: InputDecoration(
-                          hintText: 'Enter your password',
+                          hintText: 'Shkruani fjalëkalimin tuaj',
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword
@@ -217,15 +259,15 @@ class _UnifiedLoginScreenState extends State<UnifiedLoginScreen> {
                           ),
                         ),
                         validator: (value) {
-                          if (value == null || value.isEmpty) return 'Please enter your password';
-                          if (value.length < 6) return 'Password must be at least 6 characters';
+                          if (value == null || value.isEmpty) return 'Ju lutemi shkruani fjalëkalimin tuaj';
+                          if (value.length < 6) return 'Fjalëkalimi duhet të jetë të paktën 6 karaktere';
                           return null;
                         },
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          const Text("Don't have an account?", style: TextStyle(color: Colors.grey)),
+                          const Text("Nuk keni llogari?", style: TextStyle(color: Colors.grey)),
                           TextButton(
                             onPressed: () {
                               Navigator.push(
@@ -235,11 +277,11 @@ class _UnifiedLoginScreenState extends State<UnifiedLoginScreen> {
                                 ),
                               );
                             },
-                            child: const Text('Sign Up', style: TextStyle(color: primaryColor)),
+                            child: const Text('Regjistrohu', style: TextStyle(color: primaryColor)),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 15),
                       GestureDetector(
                         onTap: _isLoading ? null : _handleLogin,
                         child: Container(
@@ -259,10 +301,56 @@ class _UnifiedLoginScreenState extends State<UnifiedLoginScreen> {
                                       strokeWidth: 2,
                                     ),
                                   )
-                                : const Text("Log In", style: TextStyle(color: Colors.white)),
+                                : const Text("Hyr", style: TextStyle(color: Colors.white)),
                           ),
                         ),
                       ),
+                      const SizedBox(height: 15),
+                      Row(
+                        children: [
+                          Expanded(flex: 1,child: Divider()),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Text("OR",style: TextStyle(fontSize: 16,fontWeight: FontWeight.bold,color: greyText),),
+                          ),
+                          Expanded(flex: 1,child: Divider()),
+                        ],
+                      ),
+                      const SizedBox(height: 15),
+                      GestureDetector(
+                        onTap: _isLoading ? null : _handleGoogleSignIn,
+                        child: Container(
+                          height: 55,
+                          width: getWidth(context),
+                          decoration: BoxDecoration(
+                            border: Border.all(width: 1, color: borderColor),
+                            borderRadius: BorderRadius.circular(10),
+                            color: _isLoading ? Colors.grey[100] : Colors.transparent,
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              if (_isLoading)
+                                const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    color: primaryColor,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              else ...[
+                                SvgPicture.asset("assets/google.svg"),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                  child: Text("Hyr me Google", style: TextStyle(fontSize: 16),),
+                                )
+                              ],
+                            ],
+                          ),
+                        ),
+                      )
                     ],
                   ),
                 )

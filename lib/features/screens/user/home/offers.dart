@@ -7,7 +7,7 @@ class OffersPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Offers'),
+        title: const Text('Ofertat'),
       ),
       body: const Center(
         child: Column(
@@ -16,7 +16,7 @@ class OffersPage extends StatelessWidget {
             Icon(Icons.local_offer, size: 64, color: Colors.orange),
             SizedBox(height: 16),
             Text(
-              'Special Offers',
+              'Oferta Speciale',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
           ],

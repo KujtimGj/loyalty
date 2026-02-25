@@ -35,6 +35,9 @@ class LoyaltyProgram {
   final DateTime createdAt;
   final String? businessName; // Populated from business_id
   final String? businessLogoUrl; // Populated from business_id.logo
+  final String? businessIndustry; // Populated from business_id.industry
+  final int? currentStamps; // Current stamps earned by the customer (if available)
+  final int? completedCycles; // Times customer has collected/redeemed this reward
 
   LoyaltyProgram({
     required this.id,
@@ -49,6 +52,9 @@ class LoyaltyProgram {
     required this.createdAt,
     this.businessName,
     this.businessLogoUrl,
+    this.businessIndustry,
+    this.currentStamps,
+    this.completedCycles,
   });
 
   factory LoyaltyProgram.fromJson(Map<String, dynamic> json) {
@@ -77,6 +83,7 @@ class LoyaltyProgram {
     String businessId = '';
     String? businessName;
     String? businessLogoUrl;
+    String? businessIndustry;
     if (json['business_id'] != null) {
       if (json['business_id'] is String) {
         businessId = json['business_id'];
@@ -94,6 +101,7 @@ class LoyaltyProgram {
         
         businessId = businessMap['_id'] ?? businessMap['id'] ?? '';
         businessName = businessMap['name'];
+        businessIndustry = businessMap['industry'];
         
         // Extract logo URL from business logo object
         if (businessMap['logo'] != null) {
@@ -130,6 +138,9 @@ class LoyaltyProgram {
           : DateTime.now(),
       businessName: businessName,
       businessLogoUrl: businessLogoUrl,
+      businessIndustry: businessIndustry,
+      currentStamps: json['current_stamps'],
+      completedCycles: json['completed_cycles'],
     );
   }
 
@@ -161,6 +172,9 @@ class LoyaltyProgram {
     DateTime? createdAt,
     String? businessName,
     String? businessLogoUrl,
+    String? businessIndustry,
+    int? currentStamps,
+    int? completedCycles,
   }) {
     return LoyaltyProgram(
       id: id ?? this.id,
@@ -175,6 +189,9 @@ class LoyaltyProgram {
       createdAt: createdAt ?? this.createdAt,
       businessName: businessName ?? this.businessName,
       businessLogoUrl: businessLogoUrl ?? this.businessLogoUrl,
+      businessIndustry: businessIndustry ?? this.businessIndustry,
+      currentStamps: currentStamps ?? this.currentStamps,
+      completedCycles: completedCycles ?? this.completedCycles,
     );
   }
 

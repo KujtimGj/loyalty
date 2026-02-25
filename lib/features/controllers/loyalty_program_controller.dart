@@ -212,4 +212,122 @@ class LoyaltyProgramController {
       ));
     }
   }
+
+  /// Fetch incomplete loyalty programs for a customer
+  /// Returns programs where customer has stamps but hasn't completed them
+  /// Returns Either<Failure, List<LoyaltyProgram>>
+  static Future<Either<Failure, List<LoyaltyProgram>>> fetchIncompleteLoyaltyProgramsByCustomer(
+    String customerId,
+  ) async {
+    final url = LoyaltyProgramEndpoints.incompleteByCustomer(customerId);
+
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        try {
+          final List<dynamic> jsonData = json.decode(response.body);
+          final programs = jsonData
+              .map((json) => LoyaltyProgram.fromJson(json))
+              .toList();
+
+          print('✅ [LoyaltyProgramController] Successfully fetched ${programs.length} incomplete loyalty programs');
+          return Right(programs);
+        } catch (e, stackTrace) {
+          print('❌ [LoyaltyProgramController] Parse Error: $e');
+          print('❌ [LoyaltyProgramController] Stack Trace: $stackTrace');
+          return Left(ParseFailure(
+            'Failed to parse loyalty programs: ${e.toString()}',
+          ));
+        }
+      } else if (response.statusCode == 404) {
+        print('❌ [LoyaltyProgramController] 404 Not Found');
+        return Left(NotFoundFailure(
+          'Loyalty programs not found',
+          statusCode: response.statusCode,
+        ));
+      } else if (response.statusCode == 401) {
+        print('❌ [LoyaltyProgramController] 401 Unauthorized');
+        return Left(UnauthorizedFailure(
+          'Unauthorized access',
+          statusCode: response.statusCode,
+        ));
+      } else {
+        print('❌ [LoyaltyProgramController] Server Error: ${response.statusCode}');
+        print('❌ [LoyaltyProgramController] Error Body: ${response.body}');
+        return Left(ServerFailure(
+          'Failed to load loyalty programs: ${response.body}',
+          statusCode: response.statusCode,
+        ));
+      }
+    } on http.ClientException catch (e, stackTrace) {
+      print('❌ [LoyaltyProgramController] Network Exception: ${e.message}');
+      print('❌ [LoyaltyProgramController] Stack Trace: $stackTrace');
+      return Left(NetworkFailure(
+        'Network error: ${e.message}',
+      ));
+    } catch (e, stackTrace) {
+      print('❌ [LoyaltyProgramController] Unexpected Error: $e');
+      print('❌ [LoyaltyProgramController] Error Type: ${e.runtimeType}');
+      print('❌ [LoyaltyProgramController] Stack Trace: $stackTrace');
+      return Left(NetworkFailure(
+        'Unexpected error: ${e.toString()}',
+      ));
+    }
+  }
+
+  /// Fetch collected loyalty programs for a customer
+  /// Returns programs where customer has redeemed rewards (completedCycles > 0)
+  static Future<Either<Failure, List<LoyaltyProgram>>> fetchCollectedLoyaltyProgramsByCustomer(
+    String customerId,
+  ) async {
+    final url = LoyaltyProgramEndpoints.collectedByCustomer(customerId);
+
+    try {
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        try {
+          final List<dynamic> jsonData = json.decode(response.body);
+          final programs = jsonData
+              .map((json) => LoyaltyProgram.fromJson(json))
+              .toList();
+
+          return Right(programs);
+        } catch (e, stackTrace) {
+          return Left(ParseFailure(
+            'Failed to parse loyalty programs: ${e.toString()}',
+          ));
+        }
+      } else if (response.statusCode == 404) {
+        return Left(NotFoundFailure(
+          'Collected loyalty programs not found',
+          statusCode: response.statusCode,
+        ));
+      } else {
+        return Left(ServerFailure(
+          'Failed to load collected programs: ${response.body}',
+          statusCode: response.statusCode,
+        ));
+      }
+    } on http.ClientException catch (e) {
+      return Left(NetworkFailure(
+        'Network error: ${e.message}',
+      ));
+    } catch (e) {
+      return Left(NetworkFailure(
+        'Unexpected error: ${e.toString()}',
+      ));
+    }
+  }
 }

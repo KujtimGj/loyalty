@@ -16,14 +16,14 @@ class _OnboardingState extends State<Onboarding> {
 
   final List<OnboardingStep> _steps = [
     OnboardingStep(
-      title: 'Buy & Get Stamps',
+      title: 'Bli & Merr Vula',
       description:
-          'Lorem ipsum dolor sit amet consectetur. Velit eu urna in vel condimentum adipiscing id. Justo pretium tortor orci tempor.',
+          'Bli produkte dhe merr vula për çdo blerje. Mbledh vula dhe fiton shpërblime të mrekullueshme nga bizneset tuaja të preferuara.',
       imagePath: 'assets/onboard/step_1.png',
       floatingElements: [
         FloatingElement(
           type: FloatingElementType.button,
-          text: 'Buy Now',
+          text: 'Bli Tani',
           position: FloatingPosition.topRight,
         ),
         FloatingElement(
@@ -33,16 +33,16 @@ class _OnboardingState extends State<Onboarding> {
       ],
     ),
     OnboardingStep(
-      title: 'Collect & Earn Rewards',
+      title: 'Mblidh & Fit Shpërblime',
       description:
-          'Lorem ipsum dolor sit amet consectetur. Velit eu urna in vel condimentum adipiscing id. Justo pretium tortor orci tempor.',
+          'Mbledh vula nga blerjet tuaja dhe fiton shpërblime ekskluzive. Sa më shumë vula, aq më shumë shpërblime të mrekullueshme.',
       imagePath: 'assets/onboard/all_stamps.png',
       floatingElements: [],
     ),
     OnboardingStep(
-      title: 'Redeem & Enjoy',
+      title: 'Shpërdor & Gëzo',
       description:
-          'Lorem ipsum dolor sit amet consectetur. Velit eu urna in vel condimentum adipiscing id. Justo pretium tortor orci tempor.',
+          'Shpërdor vulat tuaja për të shpërblyer shpërblime të mrekullueshme. Gëzo eksperienca të reja dhe kursime të mëdha.',
       imagePath: 'assets/onboard/reward.png',
       floatingElements: [],
     ),
@@ -192,7 +192,7 @@ class _OnboardingState extends State<Onboarding> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Your Stamps',
+                  'Vulat Tuaja',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
@@ -297,7 +297,7 @@ class _OnboardingState extends State<Onboarding> {
                   elevation: 0,
                 ),
                 child: const Text(
-                  'Create an account',
+                  'Krijo një llogari',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -320,7 +320,7 @@ class _OnboardingState extends State<Onboarding> {
                   ),
                 ),
                 child: const Text(
-                  'Sign In',
+                  'Hyr',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -344,7 +344,7 @@ class _OnboardingState extends State<Onboarding> {
                   elevation: 0,
                 ),
                 child: const Text(
-                  'Next',
+                  'Tjetra',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,

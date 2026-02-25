@@ -10,6 +10,7 @@ import '../../../providers/loyalty_program_provider.dart';
 import '../../../providers/customer_loyalty_card_provider.dart';
 import '../../../providers/user_provider.dart';
 import '../../../models/loyalty_program_model.dart';
+import '../../../controllers/loyalty_program_controller.dart';
 import "package:flutter_svg/flutter_svg.dart";
 
 import 'offer_detail.dart';
@@ -29,6 +30,9 @@ const _categories = [
 ];
 
 class _HomePageState extends State<HomePage> {
+  List<LoyaltyProgram> _allLoyaltyPrograms = [];
+  bool _isLoadingAllPrograms = false;
+
   Future<void> _refreshData() async {
     final businessProvider = Provider.of<BusinessProvider>(
       context,
@@ -44,14 +48,47 @@ class _HomePageState extends State<HomePage> {
 
     final futures = <Future<void>>[
       businessProvider.fetchAllBusinesses(),
-      loyaltyProgramProvider.fetchAllLoyaltyPrograms(),
     ];
+    
     if (userProvider.userId != null && userProvider.userId!.isNotEmpty) {
+      futures.add(
+        loyaltyProgramProvider.fetchIncompleteLoyaltyProgramsByCustomer(userProvider.userId!),
+      );
       futures.add(
         customerLoyaltyCardProvider.fetchForCustomer(userProvider.userId!),
       );
+    } else {
+      futures.add(
+        loyaltyProgramProvider.fetchAllLoyaltyPrograms(),
+      );
     }
+    
+    // Always fetch all programs for the Gastronomi section
+    setState(() {
+      _isLoadingAllPrograms = true;
+    });
+    futures.add(_fetchAllProgramsForGastronomi());
+    
     await Future.wait(futures);
+    setState(() {
+      _isLoadingAllPrograms = false;
+    });
+  }
+
+  Future<void> _fetchAllProgramsForGastronomi() async {
+    final result = await LoyaltyProgramController.fetchAllLoyaltyPrograms();
+    result.fold(
+      (failure) {
+        setState(() {
+          _allLoyaltyPrograms = [];
+        });
+      },
+      (programs) {
+        setState(() {
+          _allLoyaltyPrograms = programs;
+        });
+      },
+    );
   }
 
   @override
@@ -64,13 +101,13 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Scaffold(  
       backgroundColor: Colors.white,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         title: Text(
-          "Hello Drin",
+          "Përshëndetje",
           style: TextStyle(
             fontSize: 30,
             fontWeight: FontWeight.bold,
@@ -81,9 +118,11 @@ class _HomePageState extends State<HomePage> {
         actions: [
           IconButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => Search()),
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => SearchModal(),
               );
             },
             icon: Icon(Icons.search, size: 30),
@@ -108,7 +147,7 @@ class _HomePageState extends State<HomePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Active Offers",
+                        "Ofertat Aktive",
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
@@ -120,7 +159,7 @@ class _HomePageState extends State<HomePage> {
                            Navigator.push(context, MaterialPageRoute(builder: (_)=>Category()));
                          },
                          child: Text(
-                          "View All",
+                          "Shiko të gjitha",
                           style: TextStyle(fontSize: 15, color: greyText),
                                                ),
                        ),
@@ -153,7 +192,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                               SizedBox(height: 8),
                               Text(
-                                'Error loading loyalty programs',
+                                'Gabim në ngarkimin e programeve të besnikërisë',
                                 style: TextStyle(
                                   color: Colors.red,
                                   fontSize: 12,
@@ -162,10 +201,16 @@ class _HomePageState extends State<HomePage> {
                               SizedBox(height: 8),
                               ElevatedButton(
                                 onPressed: () {
-                                  loyaltyProgramProvider
-                                      .fetchAllLoyaltyPrograms();
+                                  final userProvider = Provider.of<UserProvider>(context, listen: false);
+                                  if (userProvider.userId != null && userProvider.userId!.isNotEmpty) {
+                                    loyaltyProgramProvider
+                                        .fetchIncompleteLoyaltyProgramsByCustomer(userProvider.userId!);
+                                  } else {
+                                    loyaltyProgramProvider
+                                        .fetchAllLoyaltyPrograms();
+                                  }
                                 },
-                                child: Text('Retry'),
+                                child: Text('Provo Përsëri'),
                               ),
                             ],
                           ),
@@ -173,8 +218,7 @@ class _HomePageState extends State<HomePage> {
                       );
                     }
 
-                    final programs =
-                        loyaltyProgramProvider.getActiveLoyaltyPrograms();
+                    final programs = loyaltyProgramProvider.loyaltyPrograms;
 
                     if (programs.isEmpty) {
                       return SizedBox(
@@ -190,7 +234,7 @@ class _HomePageState extends State<HomePage> {
                               ),
                               SizedBox(height: 8),
                               Text(
-                                'No loyalty programs available',
+                                'Asnjë program besnikërie i disponueshëm',
                                 style: TextStyle(
                                   color: Colors.grey,
                                   fontSize: 14,
@@ -204,31 +248,35 @@ class _HomePageState extends State<HomePage> {
 
                     return SizedBox(
                       height: 300,
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        scrollDirection: Axis.horizontal,
-                        itemCount: programs.length,
-                        itemBuilder: (context, index) {
-                          final program = programs[index];
-                          final currentStamps = customerLoyaltyCardProvider
-                              .getStampsForProgram(program.id);
-                          return _BusinessCard(
-                            loyaltyProgram: program,
-                            currentStamps: currentStamps,
-                          );
-                        },
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: ListView.builder(
+                          padding: EdgeInsets.zero,
+                          shrinkWrap: true,
+                          scrollDirection: Axis.horizontal,
+                          itemCount: programs.length,
+                          itemBuilder: (context, index) {
+                            final program = programs[index];
+                            final currentStamps = program.currentStamps ?? 
+                                customerLoyaltyCardProvider.getStampsForProgram(program.id);
+                            return _BusinessCard(
+                              loyaltyProgram: program,
+                              currentStamps: currentStamps,
+                            );
+                          },
+                        ),
                       ),
                     );
                   },
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 10),
                 Padding(
                   padding: const EdgeInsets.only(right: 8.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Food & Coffee",
+                        "Gastronomi",
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
@@ -236,105 +284,88 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       Text(
-                        "View All",
+                        "Shiko të gjitha",
                         style: TextStyle(fontSize: 15, color: greyText),
                       ),
                     ],
                   ),
                 ),
                 SizedBox(height: 10),
-                SizedBox(
-                  height: 270,
-                  width: getWidth(context),
-                  child: ListView.builder(
-                    physics: ClampingScrollPhysics(),
-                    shrinkWrap: true,
-                    scrollDirection: Axis.horizontal,
-                    itemCount: 5,
-                    itemBuilder: (context, index) {
-                      return Container(
-                        padding: EdgeInsets.all(10),
-                        margin: EdgeInsets.only(right: 10),
-                        width: 300,
-                        decoration: BoxDecoration(
-                          border: Border.all(width: 1, color: primaryColor),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Center(child: Image.asset("assets/kfc2.png",height: 150,)),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          "Sach Attack",
-                                          style: TextStyle(
-                                            fontSize: 22,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        Text(
-                                          " 5,99€",
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: primaryColor,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Text("Sach Pizza"),
-                                  ],
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text("Reward",style: TextStyle(fontSize: 10,)),
-                                    Text("Free Meal",style: TextStyle(fontSize: 14,fontWeight: FontWeight.w600),)
-                                  ],
-                                )
-                              ],
-                            ),
-                            SizedBox(height: 10),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ...List.generate(8, (_) => Padding(
-                                  padding: const EdgeInsets.only(right: 4),
-                                  child: Container(
-                                    height: 20,
-                                    width: 20,
-                                    decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: unfilledStamp
-                                    ),
-                                  ),
-                                )),
-                                Text("8 vula"),
-                              ],
-                            )
-                          ], 
+                Consumer<CustomerLoyaltyCardProvider>(
+                  builder: (context, customerLoyaltyCardProvider, child) {
+                    if (_isLoadingAllPrograms) {
+                      return SizedBox(
+                        height: 300,
+                        child: Center(
+                          child: CircularProgressIndicator(color: primaryColor),
                         ),
                       );
-                    },
-                  ),
+                    }
+
+                    // Filter programs by industry 'Gastronomi' from all programs
+                    final gastronomiPrograms = _allLoyaltyPrograms
+                        .where((program) => program.businessIndustry == 'Gastronomi')
+                        .toList();
+
+                    if (gastronomiPrograms.isEmpty) {
+                      return SizedBox(
+                        height: 300,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.restaurant_outlined,
+                                size: 48,
+                                color: Colors.grey,
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'Asnjë program Gastronomi i disponueshëm',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+
+                    return SizedBox(
+                      height: 300,
+                      width: getWidth(context),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: ListView.builder(
+                          padding: EdgeInsets.zero,
+                          physics: ClampingScrollPhysics(),
+                          shrinkWrap: true,
+                          scrollDirection: Axis.horizontal,
+                          itemCount: gastronomiPrograms.length,
+                          itemBuilder: (context, index) {
+                            final program = gastronomiPrograms[index];
+                            final currentStamps = program.currentStamps ??
+                                customerLoyaltyCardProvider.getStampsForProgram(program.id);
+                            return _BusinessCard(
+                              loyaltyProgram: program,
+                              currentStamps: currentStamps,
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  },
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 10),
                 Padding(
                   padding: const EdgeInsets.only(right: 8.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        "Stores",
+                        "Dyqane",
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
@@ -342,7 +373,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       Text(
-                        "View All",
+                        "Shiko të gjitha",
                         style: TextStyle(fontSize: 15, color: greyText),
                       ),
                     ],
@@ -367,7 +398,7 @@ class _HomePageState extends State<HomePage> {
                         width: getWidth(context),
                         child: Center(
                           child: Text(
-                            'Error loading businesses',
+                            'Gabim në ngarkimin e bizneseve',
                             style: TextStyle(color: Colors.red, fontSize: 12),
                           ),
                         ),
@@ -380,7 +411,7 @@ class _HomePageState extends State<HomePage> {
                         width: getWidth(context),
                         child: Center(
                           child: Text(
-                            'No businesses found',
+                            'Asnjë biznes i gjetur',
                             style: TextStyle(color: Colors.grey, fontSize: 12),
                           ),
                         ),
@@ -390,52 +421,56 @@ class _HomePageState extends State<HomePage> {
                     return SizedBox(
                       height: 100,
                       width: getWidth(context),
-                      child: ListView.builder(
-                        itemCount: businessProvider.businesses.length,
-                        scrollDirection: Axis.horizontal,
-                        shrinkWrap: true,
-                        itemBuilder: (context, index) {
-                          final business = businessProvider.businesses[index];
-                          return GestureDetector(
-                            onTap: (){
-                              Navigator.push(context, MaterialPageRoute(builder: (_)=>BusinessDetailPage(business: business)));
-                            },
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Container(
-                                  height: 80,
-                                  width: 80,
-                                  margin: EdgeInsets.only(right: 10),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.grey[200],
-                                    image:
-                                        business.logoUrl != null &&
-                                                business.logoUrl!.isNotEmpty
-                                            ? DecorationImage(
-                                              image: NetworkImage(
-                                                business.logoUrl!,
-                                              ),
-                                              fit: BoxFit.cover,
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: ListView.builder(
+                          padding: EdgeInsets.zero,
+                          itemCount: businessProvider.businesses.length,
+                          scrollDirection: Axis.horizontal,
+                          shrinkWrap: true,
+                          itemBuilder: (context, index) {
+                            final business = businessProvider.businesses[index];
+                            return GestureDetector(
+                              onTap: (){
+                                Navigator.push(context, MaterialPageRoute(builder: (_)=>BusinessDetailPage(business: business)));
+                              },
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    height: 80,
+                                    width: 80,
+                                    margin: EdgeInsets.only(right: 10),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.grey[200],
+                                      image:
+                                          business.logoUrl != null &&
+                                                  business.logoUrl!.isNotEmpty
+                                              ? DecorationImage(
+                                                image: NetworkImage(
+                                                  business.logoUrl!,
+                                                ),
+                                                fit: BoxFit.cover,
+                                              )
+                                              : null,
+                                    ),
+                                    child:
+                                        business.logoUrl == null ||
+                                                business.logoUrl!.isEmpty
+                                            ? Icon(
+                                              Icons.store,
+                                              size: 40,
+                                              color: Colors.grey[600],
                                             )
                                             : null,
                                   ),
-                                  child:
-                                      business.logoUrl == null ||
-                                              business.logoUrl!.isEmpty
-                                          ? Icon(
-                                            Icons.store,
-                                            size: 40,
-                                            color: Colors.grey[600],
-                                          )
-                                          : null,
-                                ),
-                                Text(business.name),
-                              ],
-                            ),
-                          );
-                        },
+                                  Text(business.name),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     );
                   },
@@ -456,6 +491,50 @@ class _BusinessCard extends StatelessWidget {
 
   const _BusinessCard({required this.loyaltyProgram, this.currentStamps = 0});
 
+  double _calculateStampSize(BuildContext context, int stampCount) {
+    final cardWidth = getWidth(context) * 0.65;
+    final padding = 16.0; // 8px on each side
+    final textWidth = 80.0; // Approximate width for "X vula" text
+    final availableWidth = cardWidth - padding - textWidth;
+    
+    // Calculate spacing: 5px for <10 stamps, 2px for >=10 stamps
+    final spacing = stampCount < 10 ? 5.0 : 2.0;
+    final totalSpacing = spacing * (stampCount - 1);
+    final availableForStamps = availableWidth - totalSpacing;
+    
+    // Calculate size per stamp
+    double calculatedSize = availableForStamps / stampCount;
+    
+    // Clamp between minimum (18) and maximum (25)
+    return calculatedSize.clamp(18.0, 25.0);
+  }
+
+  List<Widget> _buildRewardButton() {
+    if (currentStamps >= loyaltyProgram.stampsRequired) {
+      return [
+        SizedBox(height: 10),
+        Container(
+          height: 50,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5),
+            color: primaryColor,
+          ),
+          child: Center(
+            child: Text(
+              "Merr Shpërblimin",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ];
+    }
+    return [];
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -467,18 +546,20 @@ class _BusinessCard extends StatelessWidget {
           ),
         );
       },
-      child: Container(
-        width: getWidth(context) * 0.65,
-        decoration: BoxDecoration(
-          border: Border.all(width: 1, color: primaryColor),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        padding: const EdgeInsets.all(10),
-        margin: EdgeInsets.only(right: 10),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      child: Align(
+        alignment: Alignment.topLeft,
+        child: Container(
+          width: getWidth(context) * 0.65,
+          decoration: BoxDecoration(
+            border: Border.all(width: 1, color: primaryColor),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          padding: const EdgeInsets.all(8),
+          margin: EdgeInsets.only(right: 10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             SizedBox(
               height: 120,
               width: getWidth(context),
@@ -507,55 +588,45 @@ class _BusinessCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             Text(
-              loyaltyProgram.businessName ?? 'Business',
+              loyaltyProgram.businessName ?? 'Biznes',
               style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: List.generate(loyaltyProgram.stampsRequired, (index) {
-                final isFilled = index < currentStamps;
-                return Container(
-                  margin: EdgeInsets.only(
-                    right: loyaltyProgram.stampsRequired < 10 ? 5 : 1,
-                  ),
-                  height: loyaltyProgram.stampsRequired < 10 ? 25 : 20,
-                  width: loyaltyProgram.stampsRequired < 10 ? 25 : 20,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: isFilled ? primaryColor : Colors.grey[300],
-                    border:
-                        isFilled
-                            ? null
-                            : Border.all(
-                              color: primaryColor.withOpacity(0.5),
-                              width: 1.5,
-                            ),
-                  ),
+            Builder(
+              builder: (context) {
+                final stampSize = _calculateStampSize(context, loyaltyProgram.stampsRequired);
+                final spacing = loyaltyProgram.stampsRequired < 10 ? 5.0 : 2.0;
+                
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ...List.generate(loyaltyProgram.stampsRequired, (index) {
+                      final isFilled = index < currentStamps;
+                      return Container(
+                        margin: EdgeInsets.only( 
+                          right: spacing,
+                        ),
+                        height: stampSize,
+                        width: stampSize,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isFilled ? primaryColor : Colors.grey[300],
+                        ),
+                      );
+                    }),
+                    Text(
+                      "${loyaltyProgram.stampsRequired} vula",
+                      style: TextStyle(fontSize: 12, color: greyText),
+                    ),
+                  ],
                 );
-              }),
+              },
             ),
-            SizedBox(height: 10),
-            Container(
-              height: 50,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(5),
-                color: primaryColor,
-              ),
-              child: Center(
-                child: Text(
-                  "Collect Reward",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
+            ..._buildRewardButton(),
           ],
+        ),
         ),
       ),
     );

@@ -21,6 +21,7 @@ class CustomerEndpoints {
   static String byPhone(String phone) => "$base/phone/$phone";
   static String signup() => "$base/signup";
   static String login() => "$base/login";
+  static String googleSignIn() => "$base/google-signin";
   static String create() => base;
   static String update(String id) => "$base/$id";
   static String delete(String id) => "$base/$id";
@@ -45,6 +46,8 @@ class LoyaltyProgramEndpoints {
   static String byId(String id) => "$base/$id";
   static String byBusiness(String businessId) => "$base/business/$businessId";
   static String activeByBusiness(String businessId) => "$base/business/$businessId/active";
+  static String incompleteByCustomer(String customerId) => "$base/customer/$customerId/incomplete";
+  static String collectedByCustomer(String customerId) => "$base/customer/$customerId/collected";
   static String create() => base;
   static String update(String id) => "$base/$id";
   static String delete(String id) => "$base/$id";

@@ -146,6 +146,36 @@ class UserProvider with ChangeNotifier {
     );
   }
 
+    /// Google Sign-In
+  Future<Either<Failure, User>> googleSignIn() async {
+    _isLoading = true;
+    _failure = null;
+    notifyListeners();
+
+    print('🟢 [UserProvider] Starting Google sign-in...');
+    final result = await AuthController.googleSignIn();
+
+    return result.fold(
+      (failure) {
+        print('❌ [UserProvider] Google sign-in failed: ${failure.message}');
+        _failure = failure;
+        _isLoading = false;
+        notifyListeners();
+        return Left(failure);
+      },
+      (authResponse) {
+        print('✅ [UserProvider] Google sign-in successful: ${authResponse.user.name}');
+        _currentUser = authResponse.user;
+        _token = authResponse.token;
+        _failure = null;
+        _isLoading = false;
+        _saveUserToStorage(authResponse.user, authResponse.token);
+        notifyListeners();
+        return Right(authResponse.user);
+      },
+    );
+  }
+
   /// Logout user
   Future<void> logout() async {
     print('🟢 [UserProvider] Logging out...');

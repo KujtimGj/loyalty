@@ -57,7 +57,7 @@ class _SignupScreenState extends State<SignupScreen> {
       (user) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Account created successfully! Please login.'),
+            content: Text('Llogaria u krijua me sukses! Ju lutemi hyni.'),
             backgroundColor: Colors.green,
           ),
         );
@@ -87,7 +87,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       const SizedBox(height: 40),
 
                       Text(
-                        'Create Account',
+                        'Krijo Llogari',
                         style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -96,7 +96,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       TextFormField(
                         controller: _nameController,
                         decoration: InputDecoration(
-                          hintText: 'Enter your full name',
+                          hintText: 'Shkruani emrin tuaj të plotë',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -111,10 +111,10 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your name';
+                            return 'Ju lutemi shkruani emrin tuaj';
                           }
                           if (value.length < 2) {
-                            return 'Name must be at least 2 characters';
+                            return 'Emri duhet të jetë të paktën 2 karaktere';
                           }
                           return null;
                         },
@@ -125,7 +125,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
                         decoration: InputDecoration(
-                          hintText: 'Enter your phone number',
+                          hintText: 'Shkruani numrin tuaj të telefonit',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -140,10 +140,10 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your phone number';
+                            return 'Ju lutemi shkruani numrin tuaj të telefonit';
                           }
                           if (value.length < 10) {
-                            return 'Please enter a valid phone number';
+                            return 'Ju lutemi shkruani një numër telefoni të vlefshëm';
                           }
                           return null;
                         },
@@ -169,10 +169,10 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your email';
+                            return 'Ju lutemi shkruani email-in tuaj';
                           }
                           if (!value.contains('@')) {
-                            return 'Please enter a valid email';
+                            return 'Ju lutemi shkruani një email të vlefshëm';
                           }
                           return null;
                         },
@@ -183,7 +183,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         controller: _passwordController,
                         obscureText: _obscurePassword,
                         decoration: InputDecoration(
-                          hintText: 'Enter your password',
+                          hintText: 'Shkruani fjalëkalimin tuaj',
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword
@@ -210,10 +210,10 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please enter your password';
+                            return 'Ju lutemi shkruani fjalëkalimin tuaj';
                           }
                           if (value.length < 6) {
-                            return 'Password must be at least 6 characters';
+                            return 'Fjalëkalimi duhet të jetë të paktën 6 karaktere';
                           }
                           return null;
                         },
@@ -224,7 +224,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         controller: _confirmPasswordController,
                         obscureText: _obscureConfirmPassword,
                         decoration: InputDecoration(
-                          hintText: 'Confirm your password',
+                          hintText: 'Konfirmoni fjalëkalimin tuaj',
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscureConfirmPassword
@@ -251,10 +251,10 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Please confirm your password';
+                            return 'Ju lutemi konfirmoni fjalëkalimin tuaj';
                           }
                           if (value != _passwordController.text) {
-                            return 'Passwords do not match';
+                            return 'Fjalëkalimet nuk përputhen';
                           }
                           return null;
                         },
@@ -274,7 +274,7 @@ class _SignupScreenState extends State<SignupScreen> {
                               ),
                               child: Center(
                                 child: Text(
-                                  "Log In",
+                                  "Regjistrohu",
                                   style: TextStyle(color: Colors.white),
                                 ),
                               ),
@@ -288,14 +288,14 @@ class _SignupScreenState extends State<SignupScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const Text(
-                            'Already have an account?',
+                            'Keni tashmë një llogari?',
                             style: TextStyle(color: Colors.grey),
                           ),
                           TextButton(
                             onPressed: () {
                               Navigator.pop(context);
                             },
-                            child: const Text('Login',style: TextStyle(color: primaryColor),),
+                            child: const Text('Hyr',style: TextStyle(color: primaryColor),),
                           ),
                         ],
                       ),

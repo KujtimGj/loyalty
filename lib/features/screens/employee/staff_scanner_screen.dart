@@ -5,6 +5,7 @@ import '../../../core/ui.dart';
 import '../../components/components.dart';
 import '../../models/business_model.dart';
 import '../../providers/staff_scanner_provider.dart';
+import '../../providers/business_user_provider.dart';
 import 'camera_scanner_page.dart';
 
 class StaffScannerScreen extends StatefulWidget {
@@ -41,6 +42,43 @@ class _StaffScannerScreenState extends State<StaffScannerScreen> {
             appBar: AppBar(
               automaticallyImplyLeading: false,
               title: Text(widget.business.name,style: TextStyle(fontSize: 30,fontWeight: FontWeight.bold),),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.logout),
+                  onPressed: () async {
+                    // Show confirmation dialog
+                    final shouldLogout = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Dil'),
+                        content: const Text('Jeni të sigurt që dëshironi të dilni?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: const Text('Anulo'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: Text(
+                              'Dil',
+                              style: TextStyle(color: primaryColor),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+
+                    if (shouldLogout == true) {
+                      final businessUserProvider = Provider.of<BusinessUserProvider>(
+                        context,
+                        listen: false,
+                      );
+                      await businessUserProvider.logout();
+                      // Navigation will be handled automatically by AuthWrapper
+                    }
+                  },
+                ),
+              ],
             ),
             body: Column(
               children: [
@@ -51,7 +89,7 @@ class _StaffScannerScreenState extends State<StaffScannerScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Select a Loyalty Program",
+                        Text("Zgjidhni një Program Besnikërie",
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -65,7 +103,7 @@ class _StaffScannerScreenState extends State<StaffScannerScreen> {
                             child: Column(
                               children: [
                                 Text(
-                                  'Error: ${provider.error!.message}',
+                                  'Gabim: ${provider.error!.message}',
                                   style: const TextStyle(color: Colors.red),
                                 ),
                                 const SizedBox(height: 8),
@@ -74,14 +112,14 @@ class _StaffScannerScreenState extends State<StaffScannerScreen> {
                                       () => provider.loadLoyaltyPrograms(
                                         widget.business.id,
                                       ),
-                                  child: const Text('Retry'),
+                                  child: const Text('Provo Përsëri'),
                                 ),
                               ],
                             ),
                           )
                         else if (provider.loyaltyPrograms.isEmpty)
                           const Center(
-                            child: Text('No active loyalty programs available'),
+                            child: Text('Asnjë program besnikërie aktiv i disponueshëm'),
                           )
                         else
                           ListView.builder(
@@ -183,7 +221,7 @@ class _StaffScannerScreenState extends State<StaffScannerScreen> {
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
-                                              "${program.stampsRequired} stamps",
+                                              "${program.stampsRequired} vula",
                                               style: TextStyle(
                                                 color: primaryColor,
                                                 fontSize: 16,
@@ -218,7 +256,7 @@ class _StaffScannerScreenState extends State<StaffScannerScreen> {
                                                             4),
                                                   ),
                                                   child: const Text(
-                                                    'Inactive',
+                                                    'Jo Aktiv',
                                                     style: TextStyle(
                                                       color: Colors.white,
                                                       fontSize: 10,
@@ -263,14 +301,14 @@ class _StaffScannerScreenState extends State<StaffScannerScreen> {
                         );
                       },
                       borderRadius: BorderRadius.circular(15),
-                      child: customButton(context, "SCAN QR Code"),
+                      child: customButton(context, "SKANO KODIN QR"),
                     ),
                   )
                 : Container(
                     margin: const EdgeInsets.only(bottom: 20),
                     child: Opacity(
                       opacity: 0.5,
-                      child: customButton(context,"Select a product"),
+                      child: customButton(context,"Zgjidhni një produkt"),
                     ),
                   ),
             floatingActionButtonLocation:

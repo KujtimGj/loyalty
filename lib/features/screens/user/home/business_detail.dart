@@ -99,7 +99,7 @@ class _BusinessDetailPageState extends State<BusinessDetailPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Business Information',
+            'Informacioni i Biznesit',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -166,12 +166,12 @@ class _BusinessDetailPageState extends State<BusinessDetailPage> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Error loading loyalty programs',
+              'Gabim në ngarkimin e programeve të besnikërisë',
               style: TextStyle(color: Colors.red[700]),
             ),
             const SizedBox(height: 8),
             Text(
-              _failure?.message ?? 'Unknown error',
+              _failure?.message ?? 'Gabim i panjohur',
               style: TextStyle(color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
@@ -179,7 +179,7 @@ class _BusinessDetailPageState extends State<BusinessDetailPage> {
             ElevatedButton.icon(
               onPressed: _fetchLoyaltyPrograms,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: const Text('Provo Përsëri'),
             ),
           ],
         ),
@@ -200,7 +200,7 @@ class _BusinessDetailPageState extends State<BusinessDetailPage> {
             ),
             const SizedBox(height: 16),
             Text(
-              'No loyalty programs available',
+              'Asnjë program besnikërie i disponueshëm',
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey[600],

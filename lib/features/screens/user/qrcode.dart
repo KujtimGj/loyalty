@@ -31,7 +31,7 @@ class QRCodePage extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      "Your QR Code",
+                      "Kodi Juaj QR",
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -40,7 +40,7 @@ class QRCodePage extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Log in to show your personal QR code to the cashier.\nThey will scan it to add a stamp to your loyalty card.',
+                      'Hyni për të treguar kodin tuaj personal QR te kasa.\nAta do ta skanojnë për të shtuar një vulë në kartën tuaj të besnikërisë.',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.white.withOpacity(0.9),
@@ -64,7 +64,7 @@ class QRCodePage extends StatelessWidget {
                   children: [
                     SizedBox(height: getHeight(context)*0.2),
                     Text(
-                      'Scan Me!',
+                      'Skano Këtu!',
                       style: TextStyle(
                         fontSize: 30,
                         fontWeight: FontWeight.bold,
@@ -88,11 +88,11 @@ class QRCodePage extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'Show the QR Code to the cashier\nand the stamp will be applied to the offer.',
+                      'Tregojini Kodin QR dhe vula do të aplikohet në ofertë.',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500
                       ),
                       textAlign: TextAlign.center,
                     ),

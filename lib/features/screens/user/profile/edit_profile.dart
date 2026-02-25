@@ -11,7 +11,7 @@ class EditProfile extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "My Profile",
+          "Profili Im",
           style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -90,7 +90,7 @@ class EditProfile extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 15),
-              Text("Password"),
+              Text("Fjalëkalimi"),
               SizedBox(height: 10),
               TextField(
                 decoration: InputDecoration(
@@ -107,7 +107,7 @@ class EditProfile extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 20),
-              customButton(context, "Save")
+              customButton(context, "Ruaj")
             ],
           ),
         ),

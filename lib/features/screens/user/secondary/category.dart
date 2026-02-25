@@ -9,12 +9,17 @@ class Category extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Fast Food",style: TextStyle(fontSize: 30,fontWeight: FontWeight.bold),),
+        title: Text("Ushqim i Shpejtë",style: TextStyle(fontSize: 30,fontWeight: FontWeight.bold),),
         automaticallyImplyLeading: false,
         actions: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Icon(Icons.close,size: 30,),
+          GestureDetector(
+            onTap: (){
+              Navigator.pop(context);
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Icon(Icons.close,size: 30,),
+            ),
           )
         ],
       ),
@@ -109,8 +114,8 @@ class Category extends StatelessWidget {
                                     Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Text("Reward",style: TextStyle(fontSize: 10,)),
-                                        Text("Free Meal",style: TextStyle(fontSize: 14,fontWeight: FontWeight.w600),)
+                                        Text("Shpërblim",style: TextStyle(fontSize: 10,)),
+                                        Text("Ushqim Falas",style: TextStyle(fontSize: 14,fontWeight: FontWeight.w600),)
                                       ],
                                     )
                                   ],

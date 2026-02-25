@@ -79,7 +79,7 @@ class _StaffLoginScreenState extends State<StaffLoginScreen>
             });
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Failed to load business: ${failure.message}'),
+                content: Text('Dështoi ngarkimi i biznesit: ${failure.message}'),
                 backgroundColor: Colors.red,
               ),
             );
@@ -150,12 +150,12 @@ class _StaffLoginScreenState extends State<StaffLoginScreen>
                           keyboardType: TextInputType.emailAddress,
                           style: const TextStyle(fontSize: 16),
                           decoration: InputDecoration(
-                            labelText: 'Business Email',
+                            labelText: 'Email i Biznesit',
                             labelStyle: TextStyle(
                               color: Colors.grey[600],
                               fontWeight: FontWeight.w500,
                             ),
-                            hintText: 'Enter your business email',
+                            hintText: 'Shkruani email-in e biznesit tuaj',
                             hintStyle: TextStyle(color: Colors.grey[400]),
                             prefixIcon: Container(
                               margin: const EdgeInsets.all(12),
@@ -206,10 +206,10 @@ class _StaffLoginScreenState extends State<StaffLoginScreen>
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Please enter your email';
+                              return 'Ju lutemi shkruani email-in tuaj';
                             }
                             if (!value.contains('@')) {
-                              return 'Please enter a valid email';
+                              return 'Ju lutemi shkruani një email të vlefshëm';
                             }
                             return null;
                           },
@@ -221,12 +221,12 @@ class _StaffLoginScreenState extends State<StaffLoginScreen>
                           obscureText: _obscurePassword,
                           style: const TextStyle(fontSize: 16),
                           decoration: InputDecoration(
-                            labelText: 'Password',
+                            labelText: 'Fjalëkalimi',
                             labelStyle: TextStyle(
                               color: Colors.grey[600],
                               fontWeight: FontWeight.w500,
                             ),
-                            hintText: 'Enter your password',
+                            hintText: 'Shkruani fjalëkalimin tuaj',
                             hintStyle: TextStyle(color: Colors.grey[400]),
                             prefixIcon: Container(
                               margin: const EdgeInsets.all(12),
@@ -290,10 +290,10 @@ class _StaffLoginScreenState extends State<StaffLoginScreen>
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Please enter your password';
+                              return 'Ju lutemi shkruani fjalëkalimin tuaj';
                             }
                             if (value.length < 6) {
-                              return 'Password must be at least 6 characters';
+                              return 'Fjalëkalimi duhet të jetë të paktën 6 karaktere';
                             }
                             return null;
                           },
@@ -384,7 +384,7 @@ class _StaffLoginScreenState extends State<StaffLoginScreen>
                                   MainAxisAlignment.center,
                                   children: [
                                     const Text(
-                                      'Sign In',
+                                      'Hyr',
                                       style: TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
@@ -410,7 +410,7 @@ class _StaffLoginScreenState extends State<StaffLoginScreen>
                   SizedBox(height: size.height * 0.04),
                   // Footer text
                   Text(
-                    'Secure business portal access',
+                    'Qasje e sigurt në portalin e biznesit',
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.white.withOpacity(0.7),

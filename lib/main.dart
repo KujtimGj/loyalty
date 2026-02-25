@@ -191,7 +191,7 @@ class _BaseState extends State<Base> {
               colorFilter: ColorFilter.mode(primaryColor, BlendMode.srcIn),
               width: 30,height: 30,
             ),
-            label: 'Home',
+            label: 'Shtëpi',
           ),
           BottomNavigationBarItem(
             icon: SvgPicture.asset("assets/nav/shopping-bag.svg",width: 30,height: 30,),
@@ -200,7 +200,7 @@ class _BaseState extends State<Base> {
               colorFilter: ColorFilter.mode(primaryColor, BlendMode.srcIn),
               width: 30,height: 30,
             ),
-            label: 'Stamps',
+            label: 'Vulat',
           ),
           BottomNavigationBarItem(
             icon: SvgPicture.asset("assets/nav/grid.svg",width: 30,height: 30,),
@@ -209,7 +209,7 @@ class _BaseState extends State<Base> {
               colorFilter: ColorFilter.mode(primaryColor, BlendMode.srcIn),
               width: 30,height: 30,
             ),
-            label: 'QR Code',
+            label: 'QR Kodi',
           ),
           BottomNavigationBarItem(
             icon: SvgPicture.asset("assets/nav/user.svg",width: 30,height: 30,),
@@ -218,7 +218,7 @@ class _BaseState extends State<Base> {
               colorFilter: ColorFilter.mode(primaryColor, BlendMode.srcIn),
               width: 30,height: 30,
             ),
-            label: 'Profile',
+            label: 'Profili',
           ),
         ],
       ),

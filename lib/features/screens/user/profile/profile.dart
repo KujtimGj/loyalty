@@ -15,14 +15,14 @@ class ProfilePage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: const Text('Profile'),
+        title: const Text('Profili'),
       ),
       body: Consumer<UserProvider>(
         builder: (context, userProvider, child) {
           final user = userProvider.currentUser;
 
           if (user == null) {
-            return const Center(child: Text('No user data available'));
+            return const Center(child: Text('Asnjë të dhënë përdoruesi e disponueshme'));
           }
 
           return SingleChildScrollView(
@@ -85,7 +85,7 @@ class ProfilePage extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              "Active Offers",
+                              "Oferta Aktive",
                               style: TextStyle(fontSize: 12),
                             ),
                             Text(
@@ -109,7 +109,7 @@ class ProfilePage extends StatelessWidget {
                     children: [
                       _buildInfoRow(
                         icon: SvgPicture.asset("assets/profile/user.svg"),
-                        label: 'My Profile',
+                        label: 'Profili Im',
                         onPress: () {
                           Navigator.push(
                             context,
@@ -122,25 +122,25 @@ class ProfilePage extends StatelessWidget {
                       const Divider(color: dividerColors),
                       _buildInfoRow(
                         icon: SvgPicture.asset("assets/profile/bar-chart.svg"),
-                        label: 'User Statistics',
+                        label: 'Statistikat e Përdoruesit',
                         onPress: () {},
                       ),
                       const Divider(color: dividerColors),
                       _buildInfoRow(
                         icon: SvgPicture.asset("assets/profile/settings.svg"),
-                        label: 'Settings',
+                        label: 'Cilësimet',
                         onPress: () {},
                       ),
                       const Divider(color: dividerColors),
                       _buildInfoRow(
                         icon: SvgPicture.asset("assets/profile/clipboard.svg"),
-                        label: 'Support',
+                        label: 'Mbështetje',
                         onPress: () {},
                       ),
                       const Divider(color: dividerColors),
                       _buildInfoRow(
                         icon: SvgPicture.asset("assets/profile/log-out.svg"),
-                        label: 'Logout',
+                        label: 'Dil',
                         onPress: () async {
                           await userProvider.logout();
                           Navigator.push(

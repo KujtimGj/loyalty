@@ -4,8 +4,13 @@ import 'package:loyalty/core/ui.dart';
 import 'package:loyalty/features/components/components.dart';
 import 'package:provider/provider.dart';
 import '../../../models/loyalty_program_model.dart';
+import '../../../models/business_model.dart';
+import '../../../models/business_location_model.dart';
 import '../../../providers/customer_loyalty_card_provider.dart';
 import '../../../providers/loyalty_program_provider.dart';
+import '../../../providers/business_provider.dart';
+import '../../../controllers/business_location_controller.dart';
+import '../../../../core/failures.dart';
 
 class OfferDetail extends StatefulWidget {
   final LoyaltyProgram loyaltyProgram;
@@ -17,6 +22,13 @@ class OfferDetail extends StatefulWidget {
 }
 
 class _OfferDetailState extends State<OfferDetail> {
+  Business? _business;
+  List<BusinessLocation> _locations = [];
+  bool _isLoadingBusiness = false;
+  bool _isLoadingLocations = false;
+  Failure? _businessFailure;
+  Failure? _locationsFailure;
+
   @override
   void initState() {
     super.initState();
@@ -26,9 +38,65 @@ class _OfferDetailState extends State<OfferDetail> {
           .fetchActiveLoyaltyProgramsByBusiness(
             widget.loyaltyProgram.businessId,
           );
+      _fetchBusiness();
+      _fetchLocations();
     });
   }
 
+  Future<void> _fetchBusiness() async {
+    setState(() {
+      _isLoadingBusiness = true;
+      _businessFailure = null;
+    });
+
+    final businessProvider = Provider.of<BusinessProvider>(context, listen: false);
+    final result = await businessProvider.fetchBusinessById(
+      widget.loyaltyProgram.businessId,
+    );
+
+    result.fold(
+      (failure) {
+        setState(() {
+          _businessFailure = failure;
+          _isLoadingBusiness = false;
+        });
+      },
+      (business) {
+        setState(() {
+          _business = business;
+          _isLoadingBusiness = false;
+        });
+      },
+    );
+  }
+
+  Future<void> _fetchLocations() async {
+    setState(() {
+      _isLoadingLocations = true;
+      _locationsFailure = null;
+    });
+
+    final result = await BusinessLocationController.fetchLocationsByBusiness(
+      widget.loyaltyProgram.businessId,
+    );
+
+    result.fold(
+      (failure) {
+        setState(() {
+          _locationsFailure = failure;
+          _isLoadingLocations = false;
+        });
+      },
+      (locations) {
+        setState(() {
+          _locations = locations.where((loc) => loc.isActive).toList();
+          _isLoadingLocations = false;
+        });
+      },
+    );
+  }
+
+  int selectedIndex=0;
   @override
   Widget build(BuildContext context) {
     final loyaltyProgram = widget.loyaltyProgram;
@@ -60,6 +128,7 @@ class _OfferDetailState extends State<OfferDetail> {
                         ? Image.network(
                           loyaltyProgram.firstImageUrl!,
                           width: getWidth(context),
+                          height: 200,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
                             return Container(
@@ -89,37 +158,51 @@ class _OfferDetailState extends State<OfferDetail> {
                                 color: Colors.grey[200],
                                 shape: BoxShape.circle,
                               ),
-                              child:
-                                  loyaltyProgram.businessLogoUrl != null
-                                      ? ClipOval(
-                                        child: Image.network(
-                                          loyaltyProgram.businessLogoUrl!,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (
-                                            context,
-                                            error,
-                                            stackTrace,
-                                          ) {
-                                            return Container(
-                                              color: Colors.grey[300],
-                                              child: Icon(
-                                                Icons.business,
-                                                size: 20,
-                                                color: Colors.grey[600],
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      )
-                                      : Icon(
-                                        Icons.business,
-                                        size: 20,
-                                        color: Colors.grey[600],
+                              child: loyaltyProgram.businessLogoUrl != null &&
+                                      loyaltyProgram.businessLogoUrl!.isNotEmpty
+                                  ? ClipOval(
+                                      child: Image.network(
+                                        loyaltyProgram.businessLogoUrl!,
+                                        height: 35,
+                                        width: 35,
+                                        fit: BoxFit.cover,
+                                        loadingBuilder: (context, child, loadingProgress) {
+                                          if (loadingProgress == null) return child;
+                                          return Center(
+                                            child: CircularProgressIndicator(
+                                              value: loadingProgress.expectedTotalBytes != null
+                                                  ? loadingProgress.cumulativeBytesLoaded /
+                                                      loadingProgress.expectedTotalBytes!
+                                                  : null,
+                                              strokeWidth: 2,
+                                            ),
+                                          );
+                                        },
+                                        errorBuilder: (
+                                          context,
+                                          error,
+                                          stackTrace,
+                                        ) {
+                                          return Container(
+                                            color: Colors.grey[300],
+                                            child: Icon(
+                                              Icons.business,
+                                              size: 20,
+                                              color: Colors.grey[600],
+                                            ),
+                                          );
+                                        },
                                       ),
+                                    )
+                                  : Icon(
+                                      Icons.business,
+                                      size: 20,
+                                      color: Colors.grey[600],
+                                    ),
                             ),
                             SizedBox(width: 8),
                             Text(
-                              loyaltyProgram.businessName ?? 'Business',
+                              loyaltyProgram.businessName ?? 'Biznes',
                               style: TextStyle(fontSize: 25),
                             ),
                           ],
@@ -127,7 +210,7 @@ class _OfferDetailState extends State<OfferDetail> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Text("Reward", style: TextStyle(fontSize: 12)),
+                            Text("Shpërblim", style: TextStyle(fontSize: 12)),
                             Text(
                               loyaltyProgram.rewardDescription,
                               style: TextStyle(
@@ -154,28 +237,6 @@ class _OfferDetailState extends State<OfferDetail> {
                     Text(
                       loyaltyProgram.rewardDescription,
                       style: TextStyle(fontSize: 15, color: greyText),
-                    ),
-                    SizedBox(height: 30),
-                    Row(
-                      children: [
-                        Text(
-                          "Oferta",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        SizedBox(width: 10),
-                        Text(
-                          "Info",
-                          style: TextStyle(fontSize: 18, color: greyText),
-                        ),
-                        SizedBox(width: 10),
-                        Text(
-                          "Lokacionet",
-                          style: TextStyle(fontSize: 18, color: greyText),
-                        ),
-                      ],
                     ),
                     SizedBox(height: 20),
                     Consumer<LoyaltyProgramProvider>(
@@ -220,8 +281,8 @@ class _OfferDetailState extends State<OfferDetail> {
           ),
           Positioned(
             bottom: 20,
-            left: 0,
-            right: 0,
+            left: 20,
+            right: 20,
             height: 140,
             child: Container(
               decoration: BoxDecoration(
@@ -265,11 +326,227 @@ class _OfferDetailState extends State<OfferDetail> {
                           );
                         }),
                       ),
-                      customButton(context, 'Collect Reward'),
+                      customButton(
+                        context,
+                        currentStamps >= loyaltyProgram.stampsRequired
+                            ? 'Mblidh Shpërblimin'
+                            : 'Skano kodin',
+                      ),
                     ],
                   );
                 },
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBusinessInfo() {
+    if (_isLoadingBusiness) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        child: Center(
+          child: CircularProgressIndicator(color: primaryColor),
+        ),
+      );
+    }
+
+    if (_businessFailure != null) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Icon(Icons.error_outline, size: 48, color: Colors.red),
+            SizedBox(height: 8),
+            Text(
+              'Gabim në ngarkimin e informacionit të biznesit',
+              style: TextStyle(color: Colors.red, fontSize: 14),
+            ),
+            SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _fetchBusiness,
+              child: Text('Provo Përsëri'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_business == null) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Text(
+          'Informacioni i biznesit nuk është i disponueshëm',
+          style: TextStyle(color: Colors.grey),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildInfoRow(Icons.business, 'Emri i Biznesit', _business!.name),
+          SizedBox(height: 16),
+          _buildInfoRow(Icons.email, 'Email', _business!.email),
+          SizedBox(height: 16),
+          _buildInfoRow(Icons.phone, 'Telefon', _business!.phone),
+          SizedBox(height: 16),
+          _buildInfoRow(
+            Icons.check_circle,
+            'Statusi i Abonimit',
+            _business!.subscriptionStatus == 'aktive' ? 'Aktive' : 'Joaktive',
+          ),
+          SizedBox(height: 16),
+          _buildInfoRow(
+            Icons.star,
+            'Plan',
+            _business!.plan == 'premium' ? 'Premium' : 'Falas',
+          ),
+          if (widget.loyaltyProgram.businessIndustry != null) ...[
+            SizedBox(height: 16),
+            _buildInfoRow(
+              Icons.category,
+              'Industria',
+              widget.loyaltyProgram.businessIndustry!,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: primaryColor, size: 24),
+        SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: greyText,
+                ),
+              ),
+              SizedBox(height: 4),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: primaryTextColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLocations() {
+    if (_isLoadingLocations) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        child: Center(
+          child: CircularProgressIndicator(color: primaryColor),
+        ),
+      );
+    }
+
+    if (_locationsFailure != null) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Icon(Icons.error_outline, size: 48, color: Colors.red),
+            SizedBox(height: 8),
+            Text(
+              'Gabim në ngarkimin e lokacioneve',
+              style: TextStyle(color: Colors.red, fontSize: 14),
+            ),
+            SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _fetchLocations,
+              child: Text('Provo Përsëri'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_locations.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Icon(Icons.location_off, size: 48, color: Colors.grey),
+            SizedBox(height: 8),
+            Text(
+              'Asnjë lokacion i disponueshëm',
+              style: TextStyle(color: Colors.grey, fontSize: 14),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ..._locations.map((location) => Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: _buildLocationCard(location),
+              )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLocationCard(BusinessLocation location) {
+    return Container(
+      width: getWidth(context),
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        border: Border.all(width: 1, color: primaryColor),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.location_on, color: primaryColor, size: 28),
+          SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  location.name,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: primaryTextColor,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  location.address,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: greyText,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

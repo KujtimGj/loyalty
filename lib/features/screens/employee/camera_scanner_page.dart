@@ -60,7 +60,7 @@ class _CameraScannerPageState extends State<CameraScannerPage> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Stamp added successfully!'),
+              content: Text('Vula u shtua me sukses!'),
               backgroundColor: Colors.green,
             ),
           );
@@ -73,7 +73,7 @@ class _CameraScannerPageState extends State<CameraScannerPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                provider.error?.message ?? 'Failed to add stamp. Try again.',
+                provider.error?.message ?? 'Dështoi shtimi i vulës. Provo përsëri.',
               ),
               backgroundColor: Colors.red,
             ),
@@ -92,7 +92,7 @@ class _CameraScannerPageState extends State<CameraScannerPage> {
       builder: (context, provider, child) {
         return Scaffold(
           appBar: AppBar(
-            title: Text('Scan QR - ${widget.selectedProgram.name}'),
+            title: Text('Skano QR - ${widget.selectedProgram.name}'),
           ),
           body: provider.scannedCustomerId == null
               ? Stack(
@@ -115,7 +115,7 @@ class _CameraScannerPageState extends State<CameraScannerPage> {
                         child: Column(
                           children: [
                             Text(
-                              'Scanning for: ${widget.selectedProgram.name}',
+                              'Duke skanuar për: ${widget.selectedProgram.name}',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 14,
@@ -125,7 +125,7 @@ class _CameraScannerPageState extends State<CameraScannerPage> {
                             ),
                             const SizedBox(height: 8),
                             const Text(
-                              'Position QR code within the frame',
+                              'Vendosni kodin QR brenda kornizës',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
@@ -156,8 +156,8 @@ class _CameraScannerPageState extends State<CameraScannerPage> {
                         const SizedBox(height: 16),
                         Text(
                           provider.isProcessing
-                              ? 'Processing...'
-                              : 'QR Code Scanned!',
+                              ? 'Duke përpunuar...'
+                              : 'Kodi QR u Skanua!',
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -166,7 +166,7 @@ class _CameraScannerPageState extends State<CameraScannerPage> {
                         if (!provider.isProcessing) ...[
                           const SizedBox(height: 8),
                           Text(
-                            'Customer ID: ${provider.scannedCustomerId}',
+                            'ID Klienti: ${provider.scannedCustomerId}',
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.grey[700],
